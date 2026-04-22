@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warp Pallet Miles — Credit Simulator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --surface:   #111111;
+      --surface2:  #161616;
+      --border:    #222222;
+      --green:     #00FF33;
+      --green-dim: #00cc29;
+      --green-bg:  rgba(0,255,51,0.06);
+      --text:      #e8e8e8;
+      --muted:     #666666;
+      --muted2:    #444444;
+      --warn:      #f59e0b;
+      --red:       #ef4444;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    .site-header {
+      border-bottom: 1px solid var(--border);
+      padding: 28px 40px 24px;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .logo-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+    }
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--green);
+      border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .site-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .site-title span { color: var(--green); }
+    .site-badge {
+      margin-left: 10px;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid rgba(0,255,51,0.2);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .site-intro {
+      font-size: 13px;
+      color: var(--muted);
+      max-width: 700px;
+      line-height: 1.7;
+      margin-top: 10px;
+    }
+    .site-intro strong { color: #aaa; font-weight: 500; }
+
+    /* ── MAIN LAYOUT ── */
+    .main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 32px 40px 60px;
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .panel-header {
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-title {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--green);
+    }
+    .panel-subtitle {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .panel-body { padding: 20px 22px; }
+
+    /* ── FORM ── */
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    select, input[type="number"], input[type="text"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+      cursor: pointer;
+    }
+    select:focus, input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(0,255,51,0.08);
+    }
+    select option { background: #1a1a1a; }
+    select optgroup { color: var(--muted); font-style: normal; font-size: 11px; }
+
+    .field-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    /* ── LEVERS ── */
+    .levers-section {
+      margin-top: 4px;
+    }
+    .lever-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .lever-item:last-child { border-bottom: none; }
+    .lever-check {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .lever-check input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--green);
+      cursor: pointer;
+    }
+    .lever-check input[type="checkbox"]:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .lever-info { flex: 1; }
+    .lever-label {
+      font-size: 13px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lever-bonus {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--green);
+      background: var(--green-bg);
+      border: 1px solid rgba(0,255,51,0.15);
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .lever-auto {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      background: #1a1a1a;
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 99px;
+    }
+    .lever-why {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    /* ── RIGHT COLUMN ── */
+    .right-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    /* ── HERO ── */
+    .hero-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px 28px 24px;
+    }
+    .hero-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .hero-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .hero-metric { }
+    .hero-metric-label {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .hero-metric-value {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1;
+      transition: all 0.2s;
+    }
+    .hero-metric-value.green { color: var(--green); }
+    .hero-metric-value.white { color: var(--text); }
+    .hero-metric-value.muted { color: var(--muted); }
+    .hero-metric-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .off-network-banner {
+      background: rgba(239,68,68,0.08);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 12px;
+      font-size: 12px;
+      color: #f87171;
+      display: none;
+    }
+
+    /* ── BREAKDOWN ── */
+    .breakdown-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .breakdown-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 11px 22px;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-row.total {
+      background: var(--green-bg);
+    }
+    .breakdown-row.cap-applied {
+      background: rgba(245,158,11,0.05);
+    }
+    .breakdown-left { flex: 1; }
+    .breakdown-name {
+      font-size: 13px;
+      color: var(--text);
+    }
+    .breakdown-why {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+      line-height: 1.4;
+    }
+    .breakdown-value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      text-align: right;
+    }
+    .breakdown-value.green { color: var(--green); }
+    .breakdown-value.muted { color: var(--muted); }
+    .breakdown-value.warn { color: var(--warn); }
+    .breakdown-value.big {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    /* ── COMPARISON ── */
+    .comparison-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .comparison-table th {
+      text-align: right;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .comparison-table th:first-child { text-align: left; }
+    .comparison-table td {
+      padding: 11px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .comparison-table tr:last-child td { border-bottom: none; }
+    .comparison-table td.label { color: var(--muted); font-size: 12px; }
+    .comparison-table td.val { text-align: right; font-weight: 600; font-family: monospace; font-size: 13px; }
+    .comparison-table td.val.green { color: var(--green); }
+    .comparison-table td.val.dim { color: var(--muted2); text-decoration: line-through; }
+    .comparison-table td.val.big { font-size: 16px; font-weight: 800; }
+    .comparison-table tr.highlight { background: var(--green-bg); }
+    .comparison-note {
+      font-size: 11px;
+      color: var(--muted);
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    /* ── ANNUAL ── */
+    .annual-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .annual-input-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .annual-input-row label {
+      margin: 0;
+      white-space: nowrap;
+      font-size: 12px;
+    }
+    .annual-input-row input {
+      width: 90px;
+    }
+    .annual-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 11px 22px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .annual-row:last-child { border-bottom: none; }
+    .annual-row.total { background: var(--green-bg); }
+    .annual-label { color: var(--muted); }
+    .annual-value { font-weight: 700; font-family: monospace; }
+    .annual-value.green { color: var(--green); }
+
+    /* ── GLIDE PATH ── */
+    .glide-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .glide-body { padding: 20px 22px; }
+    .glide-text {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    .glide-text strong { color: #aaa; font-weight: 500; }
+    .glide-track {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 80px;
+    }
+    .glide-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .glide-bar {
+      width: 100%;
+      background: var(--green);
+      border-radius: 4px 4px 0 0;
+      transition: height 0.4s;
+      min-height: 4px;
+    }
+    .glide-bar.current { background: var(--green); }
+    .glide-bar.future { background: var(--green-dim); opacity: 0.5; }
+    .glide-bar-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--green);
+      white-space: nowrap;
+    }
+    .glide-bar-year {
+      font-size: 9px;
+      color: var(--muted);
+    }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      border-top: 1px solid var(--border);
+      padding: 22px 40px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted2);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 18px 0;
+    }
+
+    /* ── VALUE FLASH ANIMATION ── */
+    @keyframes flash-green {
+      0%   { color: var(--green); }
+      100% { color: inherit; }
+    }
+    .flash { animation: flash-green 0.4s ease-out; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .main {
+        grid-template-columns: 1fr;
+        padding: 24px 20px 48px;
+      }
+      .site-header { padding: 20px 20px 18px; }
+      .hero-row { grid-template-columns: repeat(2, 1fr); }
+      .hero-metric:last-child { grid-column: span 2; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-row { grid-template-columns: 1fr; }
+      .hero-metric:last-child { grid-column: span 1; }
+      .hero-metric-value { font-size: 28px; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* ── ICON ── */
+    .icon-bolt {
+      display: inline-block;
+      width: 18px; height: 18px;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo-row">
+      <div class="logo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14L9 4l6 10H3z" fill="#0a0a0a"/>
+        </svg>
+      </div>
+      <div class="site-title">Warp <span>Pallet Miles</span></div>
+      <span class="site-badge">Q2 2026</span>
+    </div>
+    <p class="site-intro">
+      Every LTL shipment with Warp earns you <strong>Pallet Miles credits</strong>. The more freight you move, the farther it goes, and the more you help Warp's network — the bigger your credit. Credits apply as a discount on any future Warp booking, with <strong>no limit on redemption</strong>. This simulator shows exactly what you'd earn on any given shipment.
+    </p>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ MAIN ═══════════════════════════════ -->
+<main class="main">
+
+  <!-- ─────────── LEFT COLUMN — INPUTS ─────────── -->
+  <div class="left-col">
+
+    <!-- Shipment Inputs -->
+    <div class="panel" style="margin-bottom:20px;">
+      <div class="panel-header">
+        <div class="panel-title">Shipment Inputs</div>
+        <div class="panel-subtitle">Adjust these to see how different shipments earn different credits.</div>
+      </div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label>Lane</label>
+          <select id="laneSelect">
+            <optgroup label="── Priority Lanes (network-critical)">
+              <option value="LAX>SFO">LAX → SFO · 380 mi · Priority</option>
+              <option value="SFO>LAX">SFO → LAX · 380 mi · Priority</option>
+              <option value="LAX>EWR">LAX → EWR · 2750 mi · Priority</option>
+              <option value="EWR>MDT">EWR → MDT · 170 mi · Priority</option>
+              <option value="LAX>DFW">LAX → DFW · 1414 mi · Priority</option>
+              <option value="LAX>DEN">LAX → DEN · 1024 mi · Priority</option>
+              <option value="EWR>MIA">EWR → MIA · 1260 mi · Priority</option>
+            </optgroup>
+            <optgroup label="── Standard Eligible Lanes">
+              <option value="LAX>SEA">LAX → SEA · 1155 mi</option>
+              <option value="EWR>JFK">EWR → JFK · 20 mi</option>
+              <option value="LAX>PHX">LAX → PHX · 370 mi</option>
+              <option value="LAX>SLC">LAX → SLC · 680 mi</option>
+              <option value="LAX>SAN">LAX → SAN · 120 mi</option>
+              <option value="SFO>SMF">SFO → SMF · 90 mi</option>
+              <option value="LAX>LAS">LAX → LAS · 270 mi</option>
+              <option value="EWR>AVP">EWR → AVP · 120 mi</option>
+              <option value="LAX>PDX">LAX → PDX · 970 mi</option>
+              <option value="LAX>SMF">LAX → SMF · 385 mi</option>
+              <option value="DFW>IAH">DFW → IAH · 240 mi</option>
+              <option value="EWR>PHL">EWR → PHL · 85 mi</option>
+              <option value="SFO>SEA">SFO → SEA · 810 mi</option>
+            </optgroup>
+            <optgroup label="── Off-Network (no credits)">
+              <option value="LAX>ORD">LAX → ORD (off-network) · 2020 mi</option>
+              <option value="LAX>MIA">LAX → MIA (off-network) · 2730 mi</option>
+            </optgroup>
+          </select>
+          <div class="field-hint" id="laneHint">Priority lane — earns +50% bonus credit automatically.</div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Pallets</label>
+            <input type="number" id="pallets" value="6" min="1" max="26" step="1" />
+            <div class="field-hint">1–26 pallets</div>
+          </div>
+          <div class="field">
+            <label>Miles</label>
+            <input type="number" id="miles" value="380" min="1" step="1" />
+            <div class="field-hint">Auto-set by lane, editable</div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Quote Price ($)</label>
+            <input type="number" id="quotePrice" value="0" min="1" step="1" />
+            <div class="field-hint">Auto-estimated, editable</div>
+          </div>
+          <div class="field">
+            <label>Days Booked Ahead</label>
+            <input type="number" id="daysAhead" value="3" min="0" step="1" />
+            <div class="field-hint">7+ days triggers bonus</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Levers -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">Credit Levers</div>
+        <div class="panel-subtitle">Each lever you pull adds a bonus multiplier to your base credit. Stack them to maximize what you earn.</div>
+      </div>
+      <div class="panel-body">
+        <div class="levers-section">
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_priority" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Priority growth lane
+                <span class="lever-bonus">+50%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Warp needs density on specific lanes to build viable carrier routes. Shipping on these lanes helps them the most, so they share the most back.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_flexPickup" />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Pickup window ≥ 4 hrs
+                <span class="lever-bonus">+10%</span>
+              </div>
+              <div class="lever-why">Flexible pickup windows let Warp batch your load with others — they save on truck utilization and share it back with you.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_flexDelivery" />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Delivery window ≥ 4 hrs
+                <span class="lever-bonus">+10%</span>
+              </div>
+              <div class="lever-why">Same logic as pickup — delivery flexibility reduces driver wait time and lets Warp optimize their last-mile routing.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_flexMabd" />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                MABD flexibility
+                <span class="lever-bonus">+15%</span>
+              </div>
+              <div class="lever-why">"Must Arrive By Date" flexibility means Warp can route your freight on the most efficient schedule rather than forcing an overnight push.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_advanceBooking" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Booked 7+ days ahead
+                <span class="lever-bonus">+15%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Advance booking gives Warp time to consolidate loads and reduce empty miles. Better planning = lower cost = bigger credit for you.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_bulk2" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                2–3 pallets
+                <span class="lever-bonus">+10%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Multi-pallet shipments are more efficient to consolidate than single-pallet moves. Rewards you for shipping in meaningful quantities.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_bulk4" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                4+ pallets
+                <span class="lever-bonus">+25%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Larger loads dramatically improve truck fill rates. This is the biggest single efficiency gain Warp gets from a shipper — and they pass it on.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_proxPickup" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Pickup near Warp dock
+                <span class="lever-bonus">+10%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">If you're close to a Warp cross-dock, they skip a relay stop. Fewer truck moves = lower cost = shared savings.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_proxDropoff" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Dropoff near Warp dock
+                <span class="lever-bonus">+10%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Same as pickup — proximity on both ends compounds the efficiency gain.</div>
+            </div>
+          </div>
+
+          <div class="lever-item">
+            <div class="lever-check">
+              <input type="checkbox" id="lv_local" disabled />
+            </div>
+            <div class="lever-info">
+              <div class="lever-label">
+                Local trip &lt; 60 mi
+                <span class="lever-bonus">+30%</span>
+                <span class="lever-auto">auto</span>
+              </div>
+              <div class="lever-why">Short urban hops are extremely valuable for network density — they're cheap to run but hard to fill. Warp rewards you heavily for them.</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─────────── RIGHT COLUMN — RESULTS ─────────── -->
+  <div class="right-col">
+
+    <!-- Hero -->
+    <div class="hero-card">
+      <div class="hero-label">Live results · updates as you adjust inputs</div>
+      <div class="hero-row">
+        <div class="hero-metric">
+          <div class="hero-metric-label">Quote Price</div>
+          <div class="hero-metric-value white" id="heroQuote">$0</div>
+          <div class="hero-metric-sub">Warp estimate</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-label">Credits Earned</div>
+          <div class="hero-metric-value green" id="heroCredits">$0</div>
+          <div class="hero-metric-sub" id="heroCreditsNote">on this shipment</div>
+        </div>
+        <div class="hero-metric">
+          <div class="hero-metric-label">Credits / Quote</div>
+          <div class="hero-metric-value muted" id="heroPct">0%</div>
+          <div class="hero-metric-sub">effective return</div>
+        </div>
+      </div>
+      <div class="off-network-banner" id="offNetworkBanner">
+        <svg width="14" height="14" viewBox="0 0 14 14" style="vertical-align:-2px;margin-right:6px;" fill="none">
+          <circle cx="7" cy="7" r="6.5" stroke="#ef4444"/>
+          <path d="M7 4v3.5M7 9.5v.5" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        This lane is <strong>off-network</strong> — Warp doesn't operate it yet, so no Pallet Miles credits apply. Credits are only earned on Warp-operated lanes. Check back as the network expands.
+      </div>
+    </div>
+
+    <!-- Step-by-Step Breakdown -->
+    <div class="breakdown-card">
+      <div class="panel-header">
+        <div class="panel-title">Step-by-Step Breakdown</div>
+        <div class="panel-subtitle">Exactly how your credit is calculated — no black box.</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">Pallet-Miles</div>
+          <div class="breakdown-why">pallets × miles = your contribution to the network. This is the base unit of value.</div>
+        </div>
+        <div class="breakdown-value" id="bPalletMiles">—</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">Base Credit</div>
+          <div class="breakdown-why">pallet-miles × $0.003 — fixed rate, never changes. Warp commits to this floor permanently.</div>
+        </div>
+        <div class="breakdown-value" id="bBaseCredit">—</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name" id="bDistLabel">Distance Multiplier</div>
+          <div class="breakdown-why" id="bDistWhy">Short hauls earn 3× because local density is most valuable to building a dense network.</div>
+        </div>
+        <div class="breakdown-value" id="bDistMult">—</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">Core Credit (after distance)</div>
+          <div class="breakdown-why">Base credit scaled by the distance band. This is your starting point before levers.</div>
+        </div>
+        <div class="breakdown-value" id="bCoreCredit">—</div>
+      </div>
+
+      <div class="breakdown-row" id="brow_priority" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Priority Lane Bonus (+50%)</div>
+          <div class="breakdown-why">This lane is critical to Warp's network. They reward you for shipping where they need it most.</div>
+        </div>
+        <div class="breakdown-value green" id="bPriority">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_flexPickup" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Flexible Pickup (+10%)</div>
+          <div class="breakdown-why">Flexible windows let Warp batch loads and cut empty miles.</div>
+        </div>
+        <div class="breakdown-value green" id="bFlexPickup">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_flexDelivery" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Flexible Delivery (+10%)</div>
+          <div class="breakdown-why">Reduces driver wait time and optimizes last-mile routing.</div>
+        </div>
+        <div class="breakdown-value green" id="bFlexDelivery">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_flexMabd" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ MABD Flexibility (+15%)</div>
+          <div class="breakdown-why">No hard delivery deadline = Warp can route on the most efficient schedule.</div>
+        </div>
+        <div class="breakdown-value green" id="bFlexMabd">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_advance" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Advance Booking (+15%)</div>
+          <div class="breakdown-why">7+ days ahead gives Warp time to consolidate. Better planning = lower cost = bigger credit.</div>
+        </div>
+        <div class="breakdown-value green" id="bAdvance">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_bulk" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name" id="bBulkLabel">+ Bulk Pallets</div>
+          <div class="breakdown-why">More pallets = better truck fill rate. The biggest shipper-side efficiency driver.</div>
+        </div>
+        <div class="breakdown-value green" id="bBulk">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_proxPickup" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Pickup Near Dock (+10%)</div>
+          <div class="breakdown-why">Skips a relay stop. Fewer truck moves = direct savings passed back to you.</div>
+        </div>
+        <div class="breakdown-value green" id="bProxPickup">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_proxDropoff" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Dropoff Near Dock (+10%)</div>
+          <div class="breakdown-why">Same as pickup proximity — compounds the efficiency gain on both ends.</div>
+        </div>
+        <div class="breakdown-value green" id="bProxDropoff">—</div>
+      </div>
+      <div class="breakdown-row" id="brow_local" style="display:none;">
+        <div class="breakdown-left">
+          <div class="breakdown-name">+ Local Trip &lt; 60mi (+30%)</div>
+          <div class="breakdown-why">Short urban hops are hard to fill but critical for network density. Heavy reward.</div>
+        </div>
+        <div class="breakdown-value green" id="bLocal">—</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">Lever Multiplier Total</div>
+          <div class="breakdown-why">Sum of all active bonuses. Capped at 150% (1.50×) — prevents runaway credit on stacked levers.</div>
+        </div>
+        <div class="breakdown-value" id="bLeverTotal">—</div>
+      </div>
+
+      <div class="breakdown-row">
+        <div class="breakdown-left">
+          <div class="breakdown-name">Formula Credit</div>
+          <div class="breakdown-why">Core credit × lever multiplier. This is what the math produces before any cap.</div>
+        </div>
+        <div class="breakdown-value" id="bFormulaCredit">—</div>
+      </div>
+
+      <div class="breakdown-row" id="brow_cap">
+        <div class="breakdown-left">
+          <div class="breakdown-name" id="bCapLabel">Cap Check (20% of quote)</div>
+          <div class="breakdown-why">Warp can't return more than they earned. Their markup is capped at 20% of quote — so your credit is capped there too.</div>
+        </div>
+        <div class="breakdown-value warn" id="bCapValue">—</div>
+      </div>
+
+      <div class="breakdown-row total">
+        <div class="breakdown-left">
+          <div class="breakdown-name" style="font-weight:700;font-size:14px;">Credit Earned</div>
+          <div class="breakdown-why">This amount is deposited to your Warp account after shipment delivery. Apply to any future booking.</div>
+        </div>
+        <div class="breakdown-value green big" id="bFinalCredit">$0.00</div>
+      </div>
+
+    </div>
+
+    <!-- Comparison -->
+    <div class="comparison-card">
+      <div class="panel-header">
+        <div class="panel-title">Side-by-Side Comparison</div>
+        <div class="panel-subtitle">What the same freight costs through a traditional broker vs. Warp.</div>
+      </div>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th></th>
+            <th>Industry Broker</th>
+            <th>Warp</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Markup structure</td>
+            <td class="val dim" id="cBrokerMarkup">25–35%</td>
+            <td class="val green">20% cap (→10% by 2030)</td>
+          </tr>
+          <tr>
+            <td class="label">Quoted price</td>
+            <td class="val" id="cBrokerPrice">—</td>
+            <td class="val" id="cWarpPrice">—</td>
+          </tr>
+          <tr>
+            <td class="label">Credits earned</td>
+            <td class="val dim">$0.00</td>
+            <td class="val green" id="cCredits">—</td>
+          </tr>
+          <tr class="highlight">
+            <td class="label"><strong>Effective cost</strong></td>
+            <td class="val" id="cBrokerEffective">—</td>
+            <td class="val green big" id="cWarpEffective">—</td>
+          </tr>
+          <tr>
+            <td class="label">Savings vs. broker</td>
+            <td class="val dim">—</td>
+            <td class="val green big" id="cSavings">—</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="comparison-note">
+        The credit isn't a discount on <em>this</em> shipment — it's earned here and spent on the next one. Stack credits over time across your freight program, then apply them whenever you want. There's no expiry.
+      </div>
+    </div>
+
+    <!-- Annual Projection -->
+    <div class="annual-card">
+      <div class="panel-header">
+        <div class="panel-title">Annual Projection</div>
+        <div class="panel-subtitle">Scale this shipment across your freight program.</div>
+      </div>
+      <div class="annual-input-row">
+        <label for="shipmentsPerYear">Shipments like this per year:</label>
+        <input type="number" id="shipmentsPerYear" value="52" min="1" step="1" />
+      </div>
+      <div class="annual-row">
+        <div class="annual-label">Annual spend with Warp</div>
+        <div class="annual-value" id="annualSpend">—</div>
+      </div>
+      <div class="annual-row">
+        <div class="annual-label">Annual credits earned</div>
+        <div class="annual-value green" id="annualCredits">—</div>
+      </div>
+      <div class="annual-row">
+        <div class="annual-label">Annual broker spend (est.)</div>
+        <div class="annual-value" id="annualBroker">—</div>
+      </div>
+      <div class="annual-row total">
+        <div class="annual-label"><strong>Annual savings vs. broker</strong></div>
+        <div class="annual-value green" id="annualSavings">—</div>
+      </div>
+    </div>
+
+    <!-- Glide Path -->
+    <div class="glide-card">
+      <div class="panel-header">
+        <div class="panel-title">The Glide Path</div>
+        <div class="panel-subtitle">Your deal only gets better over time.</div>
+      </div>
+      <div class="glide-body">
+        <p class="glide-text">
+          Warp launches at a <strong>20% markup cap</strong> — already below every traditional broker (25–35%). As the network densifies and Warp's real carrier costs drop, the cap ratchets down publicly each year:
+          <strong>20% → 16% → 13% → 11% → 10% by 2030</strong>.
+          Each drop is a <strong>public event</strong> tied to quarterly margin milestones — not a promise, a ratchet. When Warp earns less on each load (because they're more efficient), your credit ceiling rises. Every improvement in their operations flows through to you.
+        </p>
+        <div class="glide-track">
+          <div class="glide-bar-wrap">
+            <div class="glide-bar current" style="height:80px;"></div>
+            <div class="glide-bar-label">20%</div>
+            <div class="glide-bar-year">2026</div>
+          </div>
+          <div class="glide-bar-wrap">
+            <div class="glide-bar future" style="height:64px;"></div>
+            <div class="glide-bar-label" style="opacity:0.6;">16%</div>
+            <div class="glide-bar-year">2027</div>
+          </div>
+          <div class="glide-bar-wrap">
+            <div class="glide-bar future" style="height:52px;"></div>
+            <div class="glide-bar-label" style="opacity:0.5;">13%</div>
+            <div class="glide-bar-year">2028</div>
+          </div>
+          <div class="glide-bar-wrap">
+            <div class="glide-bar future" style="height:44px;"></div>
+            <div class="glide-bar-label" style="opacity:0.45;">11%</div>
+            <div class="glide-bar-year">2029</div>
+          </div>
+          <div class="glide-bar-wrap">
+            <div class="glide-bar future" style="height:40px;"></div>
+            <div class="glide-bar-label" style="opacity:0.4;">10%</div>
+            <div class="glide-bar-year">2030</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /right-col -->
+</main>
+
+<footer class="site-footer">
+  Warp Freight Networks &nbsp;·&nbsp; warp.com &nbsp;·&nbsp; Pallet Miles credit system &nbsp;·&nbsp; Q2 2026 &nbsp;·&nbsp; Markup capped at 20% at launch, glide path to 10% by 2030
+</footer>
+
+<!-- ═══════════════════════════════ SCRIPT ═══════════════════════════════ -->
+<script>
+// ── CONSTANTS
+const BASE_RATE   = 0.003;
+const MARKUP_CAP  = 0.20;
+const BONUS_CAP   = 1.50;
+
+const DIST_BANDS = [
+  { max: 250,  label: 'Short (<250mi)', mult: 3, why: 'Short hauls earn 3× because local density is most valuable to building a dense, efficient network.' },
+  { max: 1000, label: 'Mid (250–1000mi)', mult: 2, why: 'Mid-range hauls earn 2× — strong value to the network without the cross-country overhead.' },
+  { max: Infinity, label: 'Long (>1000mi)', mult: 1, why: 'Long hauls earn 1× — valuable, but less critical to local network density than short moves.' },
+];
+
+const LEVERS = {
+  priorityLane:    { pct: 0.50, label: '+ Priority Lane Bonus', id: 'lv_priority' },
+  flexPickup:      { pct: 0.10, label: '+ Flexible Pickup',     id: 'lv_flexPickup' },
+  flexDelivery:    { pct: 0.10, label: '+ Flexible Delivery',   id: 'lv_flexDelivery' },
+  flexMabd:        { pct: 0.15, label: '+ MABD Flexibility',    id: 'lv_flexMabd' },
+  advanceBooking:  { pct: 0.15, label: '+ Advance Booking',     id: 'lv_advanceBooking' },
+  bulk2to3:        { pct: 0.10, label: '+ 2–3 Pallets',         id: 'lv_bulk2' },
+  bulk4plus:       { pct: 0.25, label: '+ 4+ Pallets',          id: 'lv_bulk4' },
+  proxPickup:      { pct: 0.10, label: '+ Pickup Near Dock',    id: 'lv_proxPickup' },
+  proxDropoff:     { pct: 0.10, label: '+ Dropoff Near Dock',   id: 'lv_proxDropoff' },
+  localTrip:       { pct: 0.30, label: '+ Local Trip <60mi',    id: 'lv_local' },
+};
+
+const LANES = {
+  'LAX>SFO': { miles: 380,  priority: true,  proxOrigin: true,  proxDest: true,  eligible: true  },
+  'SFO>LAX': { miles: 380,  priority: true,  proxOrigin: true,  proxDest: true,  eligible: true  },
+  'LAX>EWR': { miles: 2750, priority: true,  proxOrigin: true,  proxDest: true,  eligible: true  },
+  'EWR>MDT': { miles: 170,  priority: true,  proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>DFW': { miles: 1414, priority: true,  proxOrigin: true,  proxDest: true,  eligible: true  },
+  'LAX>DEN': { miles: 1024, priority: true,  proxOrigin: true,  proxDest: false, eligible: true  },
+  'EWR>MIA': { miles: 1260, priority: true,  proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>SEA': { miles: 1155, priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'EWR>JFK': { miles: 20,   priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>PHX': { miles: 370,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>SLC': { miles: 680,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>SAN': { miles: 120,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'SFO>SMF': { miles: 90,   priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>LAS': { miles: 270,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'EWR>AVP': { miles: 120,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>PDX': { miles: 970,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>SMF': { miles: 385,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'DFW>IAH': { miles: 240,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'EWR>PHL': { miles: 85,   priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'SFO>SEA': { miles: 810,  priority: false, proxOrigin: true,  proxDest: false, eligible: true  },
+  'LAX>ORD': { miles: 2020, priority: false, proxOrigin: true,  proxDest: false, eligible: false },
+  'LAX>MIA': { miles: 2730, priority: false, proxOrigin: true,  proxDest: false, eligible: false },
+};
+
+// ── QUOTE ESTIMATION
+function estimateQuote(pallets, miles) {
+  const RPP   = 129.50;
+  const RPM   = 0.157;
+  const SCALE = 0.87;
+  const scaling = 1 + (pallets - 1) * SCALE;
+  return RPP * scaling + RPM * pallets * miles;
+}
+
+// ── DOM HELPERS
+function $(id) { return document.getElementById(id); }
+function fmtDollar(n) {
+  return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+function fmtDollarK(n) {
+  if (Math.abs(n) >= 1000) return '$' + (n/1000).toFixed(1).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + 'k';
+  return fmtDollar(n);
+}
+function setVal(id, txt) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = txt;
+}
+function showRow(id, show) {
+  const el = $(id);
+  if (el) el.style.display = show ? '' : 'none';
+}
+
+// ── CALCULATE & RENDER
+function recalc() {
+  const laneKey  = $('laneSelect').value;
+  const lane     = LANES[laneKey] || {};
+  const pallets  = Math.max(1, Math.min(26, parseInt($('pallets').value) || 1));
+  const miles    = Math.max(1, parseInt($('miles').value) || 1);
+  const quote    = parseFloat($('quotePrice').value) || estimateQuote(pallets, miles);
+  const days     = parseInt($('daysAhead').value) || 0;
+  const eligible = lane.eligible !== false;
+  const shipYear = Math.max(1, parseInt($('shipmentsPerYear').value) || 52);
+
+  // ── AUTO-DETECT LEVERS
+  const autoLevers = {
+    priorityLane:   lane.priority === true,
+    advanceBooking: days >= 7,
+    bulk2to3:       pallets >= 2 && pallets <= 3,
+    bulk4plus:      pallets >= 4,
+    proxPickup:     lane.proxOrigin === true,
+    proxDropoff:    lane.proxDest   === true,
+    localTrip:      miles < 60,
+  };
+
+  // ── SET CHECKBOXES
+  function setCheckbox(id, checked, disabled) {
+    const el = $(id);
+    if (!el) return;
+    el.checked  = checked;
+    el.disabled = disabled;
+  }
+  setCheckbox('lv_priority',      autoLevers.priorityLane,   true);
+  setCheckbox('lv_advanceBooking',autoLevers.advanceBooking,  true);
+  setCheckbox('lv_bulk2',         autoLevers.bulk2to3,        true);
+  setCheckbox('lv_bulk4',         autoLevers.bulk4plus,       true);
+  setCheckbox('lv_proxPickup',    autoLevers.proxPickup,      true);
+  setCheckbox('lv_proxDropoff',   autoLevers.proxDropoff,     true);
+  setCheckbox('lv_local',         autoLevers.localTrip,       true);
+
+  // ── ACTIVE LEVERS
+  const active = {
+    priorityLane:   autoLevers.priorityLane,
+    flexPickup:     $('lv_flexPickup').checked,
+    flexDelivery:   $('lv_flexDelivery').checked,
+    flexMabd:       $('lv_flexMabd').checked,
+    advanceBooking: autoLevers.advanceBooking,
+    bulk2to3:       autoLevers.bulk2to3,
+    bulk4plus:      autoLevers.bulk4plus,
+    proxPickup:     autoLevers.proxPickup,
+    proxDropoff:    autoLevers.proxDropoff,
+    localTrip:      autoLevers.localTrip,
+  };
+
+  // ── DISTANCE BAND
+  const band = DIST_BANDS.find(b => miles <= b.max) || DIST_BANDS[DIST_BANDS.length - 1];
+
+  // ── MATH
+  const palletMiles = pallets * miles;
+  const baseCredit  = palletMiles * BASE_RATE;
+  const coreCredit  = baseCredit * band.mult;
+
+  let leverSum = 0;
+  if (active.priorityLane)   leverSum += LEVERS.priorityLane.pct;
+  if (active.flexPickup)     leverSum += LEVERS.flexPickup.pct;
+  if (active.flexDelivery)   leverSum += LEVERS.flexDelivery.pct;
+  if (active.flexMabd)       leverSum += LEVERS.flexMabd.pct;
+  if (active.advanceBooking) leverSum += LEVERS.advanceBooking.pct;
+  if (active.bulk2to3)       leverSum += LEVERS.bulk2to3.pct;
+  if (active.bulk4plus)      leverSum += LEVERS.bulk4plus.pct;
+  if (active.proxPickup)     leverSum += LEVERS.proxPickup.pct;
+  if (active.proxDropoff)    leverSum += LEVERS.proxDropoff.pct;
+  if (active.localTrip)      leverSum += LEVERS.localTrip.pct;
+
+  const leverCapped   = Math.min(leverSum, BONUS_CAP);
+  const formulaCredit = coreCredit * (1 + leverCapped);
+  const cap           = quote * MARKUP_CAP;
+  const capApplied    = formulaCredit > cap;
+  const finalCredit   = eligible ? Math.min(formulaCredit, cap) : 0;
+  const pct           = quote > 0 ? (finalCredit / quote) * 100 : 0;
+
+  // ── BROKER ESTIMATE (30% markup over implied carrier cost)
+  const impliedCarrierCost = quote / 1.20;
+  const brokerQuote        = impliedCarrierCost * 1.30;
+
+  // ── LANE HINT
+  const laneHintEl = $('laneHint');
+  if (!eligible) {
+    laneHintEl.textContent = 'Off-network lane — no Pallet Miles credits apply on this route.';
+    laneHintEl.style.color = '#ef4444';
+  } else if (lane.priority) {
+    laneHintEl.textContent = 'Priority lane — earns +50% bonus credit automatically.';
+    laneHintEl.style.color = 'var(--green)';
+  } else {
+    laneHintEl.textContent = 'Standard eligible lane — all levers apply.';
+    laneHintEl.style.color = 'var(--muted)';
+  }
+
+  // ── OFF-NETWORK BANNER
+  $('offNetworkBanner').style.display = eligible ? 'none' : 'block';
+
+  // ── HERO
+  setVal('heroQuote',    fmtDollar(quote));
+  setVal('heroCredits',  eligible ? fmtDollar(finalCredit) : '$0.00');
+  setVal('heroPct',      eligible ? pct.toFixed(1) + '%' : '0%');
+  setVal('heroCreditsNote', eligible ? 'on this shipment' : 'off-network');
+
+  // ── BREAKDOWN
+  setVal('bPalletMiles',  palletMiles.toLocaleString() + ' pallet-mi');
+  setVal('bBaseCredit',   fmtDollar(baseCredit));
+
+  setVal('bDistLabel', `Distance Multiplier — ${band.label} (${band.mult}×)`);
+  setVal('bDistWhy',   band.why);
+  setVal('bDistMult',  band.mult + '×');
+
+  setVal('bCoreCredit',  fmtDollar(coreCredit));
+  setVal('bLeverTotal',  (leverSum * 100).toFixed(0) + '%' + (leverSum > BONUS_CAP ? ' → capped at 150%' : ''));
+  setVal('bFormulaCredit', fmtDollar(formulaCredit));
+
+  // Lever rows
+  function leverRow(rowId, valId, show, amount, labelOverride) {
+    showRow(rowId, show && eligible);
+    if (show && eligible && valId) setVal(valId, '+' + fmtDollar(amount));
+  }
+  leverRow('brow_priority',    'bPriority',    active.priorityLane,   coreCredit * 0.50);
+  leverRow('brow_flexPickup',  'bFlexPickup',  active.flexPickup,     coreCredit * 0.10);
+  leverRow('brow_flexDelivery','bFlexDelivery',active.flexDelivery,   coreCredit * 0.10);
+  leverRow('brow_flexMabd',    'bFlexMabd',    active.flexMabd,       coreCredit * 0.15);
+  leverRow('brow_advance',     'bAdvance',     active.advanceBooking, coreCredit * 0.15);
+
+  const bulkShow   = active.bulk2to3 || active.bulk4plus;
+  const bulkPct    = active.bulk4plus ? 0.25 : 0.10;
+  const bulkLabel  = active.bulk4plus ? '+ 4+ Pallets (+25%)' : '+ 2–3 Pallets (+10%)';
+  showRow('brow_bulk', bulkShow && eligible);
+  if (bulkShow && eligible) {
+    setVal('bBulkLabel', bulkLabel);
+    setVal('bBulk', '+' + fmtDollar(coreCredit * bulkPct));
+  }
+
+  leverRow('brow_proxPickup',  'bProxPickup',  active.proxPickup,     coreCredit * 0.10);
+  leverRow('brow_proxDropoff', 'bProxDropoff', active.proxDropoff,    coreCredit * 0.10);
+  leverRow('brow_local',       'bLocal',       active.localTrip,      coreCredit * 0.30);
+
+  // Cap row
+  const capEl = $('brow_cap');
+  if (capApplied && eligible) {
+    capEl.style.display = '';
+    setVal('bCapLabel',  `Cap applied (20% of $${quote.toFixed(0)} = ${fmtDollar(cap)})`);
+    setVal('bCapValue',  `Formula ${fmtDollar(formulaCredit)} → capped at ${fmtDollar(cap)}`);
+  } else if (eligible) {
+    capEl.style.display = '';
+    setVal('bCapLabel',  'Cap check (20% of quote)');
+    setVal('bCapValue',  `${fmtDollar(formulaCredit)} < ${fmtDollar(cap)} — no cap`);
+    const capValEl = $('bCapValue');
+    if (capValEl) { capValEl.className = 'breakdown-value muted'; }
+  } else {
+    capEl.style.display = 'none';
+  }
+
+  setVal('bFinalCredit', eligible ? fmtDollar(finalCredit) : '$0.00');
+
+  // ── COMPARISON
+  setVal('cBrokerPrice',     fmtDollar(brokerQuote));
+  setVal('cWarpPrice',       fmtDollar(quote));
+  setVal('cCredits',         eligible ? fmtDollar(finalCredit) : '$0.00');
+  setVal('cBrokerEffective', fmtDollar(brokerQuote));
+  setVal('cWarpEffective',   fmtDollar(quote - finalCredit));
+  const shipSavings = brokerQuote - (quote - finalCredit);
+  setVal('cSavings',         fmtDollarK(Math.max(0, shipSavings)));
+
+  // ── ANNUAL
+  setVal('annualSpend',   fmtDollarK(quote      * shipYear));
+  setVal('annualCredits', fmtDollarK(finalCredit * shipYear));
+  setVal('annualBroker',  fmtDollarK(brokerQuote  * shipYear));
+  const annualSavings = (brokerQuote * shipYear) - ((quote - finalCredit) * shipYear);
+  setVal('annualSavings', fmtDollarK(Math.max(0, annualSavings)));
+}
+
+// ── LANE CHANGE HANDLER
+$('laneSelect').addEventListener('change', () => {
+  const key  = $('laneSelect').value;
+  const lane = LANES[key];
+  if (lane) {
+    $('miles').value      = lane.miles;
+    const est             = estimateQuote(parseInt($('pallets').value) || 1, lane.miles);
+    $('quotePrice').value = Math.round(est);
+  }
+  recalc();
+});
+
+// ── PALLETS CHANGE → re-estimate quote
+$('pallets').addEventListener('input', () => {
+  const p   = Math.max(1, parseInt($('pallets').value) || 1);
+  const m   = Math.max(1, parseInt($('miles').value)  || 1);
+  const est = estimateQuote(p, m);
+  $('quotePrice').value = Math.round(est);
+  recalc();
+});
+
+// ── ALL OTHER INPUTS
+['miles','quotePrice','daysAhead','shipmentsPerYear'].forEach(id => {
+  $(id).addEventListener('input', recalc);
+});
+['lv_flexPickup','lv_flexDelivery','lv_flexMabd'].forEach(id => {
+  $(id).addEventListener('change', recalc);
+});
+
+// ── INIT
+(function init() {
+  const defaultLane = LANES['LAX>SFO'];
+  $('miles').value      = defaultLane.miles;
+  $('quotePrice').value = Math.round(estimateQuote(6, defaultLane.miles));
+  recalc();
+})();
+</script>
+</body>
+</html>
