@@ -330,6 +330,46 @@ input[type=range]::-moz-range-thumb {
 }
 .sim-lever-row:hover { background: rgba(0,255,51,0.05); border-color: rgba(0,255,51,0.2); }
 .sim-lever-row.checked { background: rgba(0,20,8,0.7); border-color: rgba(0,255,51,0.35); }
+
+.lever-toggle {
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.15s;
+  user-select: none;
+}
+.lever-toggle:hover {
+  border-color: rgba(0,255,51,0.3);
+  background: rgba(0,255,51,0.04);
+}
+.lever-toggle.active {
+  background: rgba(0,255,51,0.08);
+  border-color: rgba(0,255,51,0.35);
+}
+.lever-toggle .lev-check {
+  width: 18px; height: 18px; border-radius: 5px;
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.lever-toggle.active .lev-check {
+  background: var(--color-warp-green);
+  border-color: var(--color-warp-green);
+}
+.lever-toggle .lev-name { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
+.lever-toggle .lev-desc { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.lever-toggle .lev-pct {
+  font-size: 13px; font-weight: 800; color: var(--color-warp-green);
+  white-space: nowrap; flex-shrink: 0;
+}
+
 .sim-lever-row input[type=checkbox] {
   width: 16px; height: 16px;
   accent-color: var(--color-warp-green);
@@ -989,260 +1029,90 @@ input[type=range]::-moz-range-thumb {
     </div>
 
     <!-- Levers -->
-    <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">SELECT LEVERS TO APPLY</div>
+    <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:10px;">SELECT LEVERS TO APPLY</div>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:28px;" id="lever-list">
-      <label class="sim-lever-row" id="row-priorityLane">
-        <input type="checkbox" id="lev-priorityLane" value="0.50" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Priority growth lane</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+50% — one of 7 priority corridors</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+50%</span>
-      </label>
-      <label class="sim-lever-row" id="row-flexPickup">
-        <input type="checkbox" id="lev-flexPickup" value="0.10" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Pickup window ≥4hrs</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — batch routing flexibility</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
-      </label>
-      <label class="sim-lever-row" id="row-flexDelivery">
-        <input type="checkbox" id="lev-flexDelivery" value="0.10" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Delivery window ≥4hrs</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — routing slack</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
-      </label>
-      <label class="sim-lever-row" id="row-flexMabd">
-        <input type="checkbox" id="lev-flexMabd" value="0.15" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">MABD flexibility</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+15% — take latest must-arrive-by date</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+15%</span>
-      </label>
-      <label class="sim-lever-row" id="row-advanceBooking">
-        <input type="checkbox" id="lev-advanceBooking" value="0.15" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Book 7+ days ahead</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+15% — lead time for capacity planning</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+15%</span>
-      </label>
-      <label class="sim-lever-row" id="row-bulk2to3">
-        <input type="checkbox" id="lev-bulk2to3" value="0.10" onchange="syncBulk('bulk2to3')">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">2–3 pallets</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — fuller trucks (exclusive with 4+)</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
-      </label>
-      <label class="sim-lever-row" id="row-bulk4plus">
-        <input type="checkbox" id="lev-bulk4plus" value="0.25" onchange="syncBulk('bulk4plus')">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">4+ pallets</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+25% — full consolidation (exclusive with 2-3)</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+25%</span>
-      </label>
-      <label class="sim-lever-row" id="row-proxPickup">
-        <input type="checkbox" id="lev-proxPickup" value="0.10" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Pickup near Warp dock</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — short drayage</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
-      </label>
-      <label class="sim-lever-row" id="row-proxDropoff">
-        <input type="checkbox" id="lev-proxDropoff" value="0.10" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Dropoff near Warp dock</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — short last-mile</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
-      </label>
-      <label class="sim-lever-row" id="row-localTrip">
-        <input type="checkbox" id="lev-localTrip" value="0.30" onchange="calcSim()">
-        <span style="flex:1;">
-          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Local trip (&lt;60 mi)</span>
-          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+30% — genuinely cheap to serve</span>
-        </span>
-        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+30%</span>
-      </label>
-    </div>
-
-    <!-- Result card -->
-    <div class="sim-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:8px;">CREDIT EARNED</div>
-          <div class="credit-earned-number" id="sim-credit-earned">$0.00</div>
-          <div style="font-size:12px;color:var(--color-text-muted);margin-top:8px;" id="sim-cap-note"></div>
+      <div class="lever-toggle" id="row-priorityLane" data-pct="0.50" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-priorityLane"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Priority growth lane</div>
+          <div class="lev-desc">One of 7 priority corridors Warp is densifying</div>
         </div>
-        <div style="display:flex;flex-direction:column;gap:2px;text-align:right;">
-          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:6px;">ESTIMATED QUOTE</div>
-          <div style="font-size:28px;font-weight:800;color:var(--color-text-primary);" id="sim-quote">$0.00</div>
+        <span class="lev-pct">+50%</span>
+      </div>
+      <div class="lever-toggle" id="row-flexPickup" data-pct="0.10" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-flexPickup"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Pickup window ≥4hrs</div>
+          <div class="lev-desc">Lets routing batch your load with others</div>
         </div>
+        <span class="lev-pct">+10%</span>
       </div>
-      <div id="sim-breakdown">
-        <div class="result-row"><span class="result-label">Pallet-miles</span><span class="result-val" id="sim-pm">0</span></div>
-        <div class="result-row"><span class="result-label">Distance band</span><span class="result-val" id="sim-band">—</span></div>
-        <div class="result-row"><span class="result-label">Core credit (PM × $0.003 × band)</span><span class="result-val green" id="sim-core">$0.00</span></div>
-        <div class="result-row"><span class="result-label">Lever bonus</span><span class="result-val green" id="sim-bonus">+0%</span></div>
-        <div class="result-row"><span class="result-label" id="sim-lever-contrib-label">Lever contributions</span><span class="result-val green" id="sim-lever-detail">—</span></div>
-        <div class="result-row"><span class="result-label">Formula credit (core × multiplier)</span><span class="result-val green" id="sim-formula">$0.00</span></div>
-        <div class="result-row"><span class="result-label">Cap (quote × 20%)</span><span class="result-val" id="sim-cap">$0.00</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Nine Levers (display-only, same as overview) -->
-  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
-    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">THE NINE LEVERS</div>
-    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">
-      Stack any combination of these levers on a single shipment to multiply your Pallet Miles credits by up to <span style="color:var(--color-warp-green);font-weight:700;">+150%</span>.
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+50%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Priority growth lane</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lane is in the 7 growth-priority corridors Warp is densifying</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Pickup window ≥4hrs</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lets routing batch your load with others</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Delivery window ≥4hrs</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Creates routing slack for Warp</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+15%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">MABD flexibility</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Take the latest Must-Arrive-By date; Warp gets max routing freedom</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+15%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Book 7+ days ahead</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lead time lets Warp plan around capacity</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">2–3 pallets</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Fuller trucks, lower touch cost</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+25%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">4+ pallets</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Full consolidation — biggest bulk bonus</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Pickup near Warp dock</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Short drayage, lower pickup cost</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Dropoff near Warp dock</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Short last-mile, lower delivery cost</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-      <div class="max-lever-card">
-        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+30%</div>
-        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Local trip (&lt;60 mi)</div>
-        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Genuinely cheap to serve; maximum bonus</div>
-        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
-      </div>
-    </div>
-    <div style="margin-top:18px;font-size:12px;color:var(--color-text-muted);font-style:italic;line-height:1.6;">
-      Stack all levers: max +150% cumulative. Note: 2–3 pallets and 4+ pallets are mutually exclusive — apply one or the other.
-    </div>
-  </div>
-
-  <!-- Worked example: LAX→SFO -->
-  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
-    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">PERFECT SHIPMENT — WORKED EXAMPLE</div>
-    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">
-      A maxed-out shipment on LAX → SFO, 3 pallets — most levers pulled. Markup capped at 20% today, ratcheting down to 10% by 2030.
-    </div>
-    <div style="background:rgba(0,20,8,0.7);border:1px solid rgba(0,255,51,0.25);border-radius:16px;overflow:hidden;max-width:600px;">
-      <!-- Header -->
-      <div style="background:rgba(0,255,51,0.08);border-bottom:1px solid rgba(0,255,51,0.15);padding:18px 24px;display:flex;align-items:center;gap:12px;">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M10 2L17 7.5L10 18L3 7.5L10 2Z" fill="#00FF33" opacity="0.9"/>
-        </svg>
-        <div>
-          <div style="font-size:15px;font-weight:800;color:var(--color-text-primary);">LAX → SFO, 3 pallets</div>
-          <div style="font-size:12px;color:var(--color-text-muted);">Most levers pulled</div>
+      <div class="lever-toggle" id="row-flexDelivery" data-pct="0.10" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-flexDelivery"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Delivery window ≥4hrs</div>
+          <div class="lev-desc">Creates routing slack for Warp</div>
         </div>
+        <span class="lev-pct">+10%</span>
       </div>
-      <!-- Breakdown -->
-      <div style="padding:20px 24px;">
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Quote</span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">$534</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Pallet-miles <span style="font-size:11px;opacity:0.6;">(3 pallets × 380 miles)</span></span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">1,140</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Distance band</span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">Mid-range (2×)</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;color:var(--color-text-muted);">Core credit <span style="font-size:11px;opacity:0.6;">(1,140 PM × $0.003 × 2)</span></span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">$6.84</span></div>
+      <div class="lever-toggle" id="row-flexMabd" data-pct="0.15" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-flexMabd"></div>
+        <div style="flex:1;">
+          <div class="lev-name">MABD flexibility</div>
+          <div class="lev-desc">Take the latest must-arrive-by date</div>
         </div>
-        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
-          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">LEVERS APPLIED</div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Priority growth lane</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+50%</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Pickup window ≥4hrs</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Delivery window ≥4hrs</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>2–3 pallets</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+15%</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Pickup near Warp dock</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
-          <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
-            <span style="font-size:13px;font-weight:700;color:var(--color-text-muted);">Total bonus</span>
-            <span style="font-size:15px;font-weight:900;color:#00FF33;">+95%</span>
-          </div>
+        <span class="lev-pct">+15%</span>
+      </div>
+      <div class="lever-toggle" id="row-advanceBooking" data-pct="0.15" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-advanceBooking"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Book 7+ days ahead</div>
+          <div class="lev-desc">Lead time for capacity planning</div>
         </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">FORMULA</div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Core credit × multiplier</span><span style="font-size:13px;color:var(--color-text-muted);">$6.84 × 1.95</span></div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Markup cap (20% of $534 · 2026)</span><span style="font-size:13px;color:var(--color-text-muted);">$106.80</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,255,51,0.2);">
-            <span style="font-size:15px;font-weight:800;color:var(--color-text-primary);">Credit earned</span>
-            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
-              <span style="font-size:24px;font-weight:900;color:#00FF33;letter-spacing:-0.02em;text-shadow:0 0 20px rgba(0,255,51,0.4);">$13.34</span>
-              <span style="font-size:11px;color:var(--color-text-muted);">Cap doesn't bind ($13.34 &lt; $106.80)</span>
-            </div>
-          </div>
+        <span class="lev-pct">+15%</span>
+      </div>
+      <div class="lever-toggle" id="row-bulk2to3" data-pct="0.10" data-exclusive="bulk" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-bulk2to3"></div>
+        <div style="flex:1;">
+          <div class="lev-name">2–3 pallets</div>
+          <div class="lev-desc">Fuller trucks, lower touch cost</div>
         </div>
+        <span class="lev-pct">+10%</span>
+      </div>
+      <div class="lever-toggle" id="row-bulk4plus" data-pct="0.25" data-exclusive="bulk" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-bulk4plus"></div>
+        <div style="flex:1;">
+          <div class="lev-name">4+ pallets</div>
+          <div class="lev-desc">Full consolidation — biggest bulk bonus</div>
+        </div>
+        <span class="lev-pct">+25%</span>
+      </div>
+      <div class="lever-toggle" id="row-proxPickup" data-pct="0.10" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-proxPickup"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Pickup near Warp dock</div>
+          <div class="lev-desc">Short drayage, lower pickup cost</div>
+        </div>
+        <span class="lev-pct">+10%</span>
+      </div>
+      <div class="lever-toggle" id="row-proxDropoff" data-pct="0.10" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-proxDropoff"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Dropoff near Warp dock</div>
+          <div class="lev-desc">Short last-mile, lower delivery cost</div>
+        </div>
+        <span class="lev-pct">+10%</span>
+      </div>
+      <div class="lever-toggle" id="row-localTrip" data-pct="0.30" onclick="toggleLever(this)">
+        <div class="lev-check" id="chk-localTrip"></div>
+        <div style="flex:1;">
+          <div class="lev-name">Local trip (&lt;60 mi)</div>
+          <div class="lev-desc">Genuinely cheap to serve; maximum bonus</div>
+        </div>
+        <span class="lev-pct">+30%</span>
       </div>
     </div>
-  </div>
-
-  <!-- Savings Calculator -->
-  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
-    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">NETWORK-SCALE SAVINGS CALCULATOR</div>
-    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:28px;line-height:1.6;">
-      See how credits stack up across your shipping volume. Assumes $500 avg quote, Warp 10% markup, credits return ~50% of margin.
-    </div>
-    <!-- Slider -->
-    <div style="margin-bottom:32px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">Shipments per month with Warp</span>
-        <span style="font-size:28px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;" id="slider-val">100</span>
-      </div>
-      <input type="range" id="savings-slider" min="10" max="2000" step="10" value="100"
-        oninput="calcSavings(this.value)"
-        style="background:linear-gradient(90deg,#00FF33 4.5%,rgba(255,255,255,0.1) 0%);">
-      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--color-text-muted);">
-        <span>10</span><span>1,000</span><span>2,000</span>
-      </div>
-    </div>
+    
     <!-- Results -->
     <div class="savings-results">
       <div style="font-size:14px;font-weight:700;color:var(--color-text-muted);margin-bottom:20px;">
@@ -1465,85 +1335,61 @@ function syncBulk(clicked) {
   calcSim();
 }
 
+
+function toggleLever(el) {
+  var excl = el.getAttribute('data-exclusive');
+  if (excl) {
+    // deactivate others with same exclusive group
+    document.querySelectorAll('[data-exclusive="'+excl+'"]').forEach(function(e) {
+      if (e !== el) { e.classList.remove('active'); }
+    });
+  }
+  el.classList.toggle('active');
+  calcSim();
+}
+
+function getLeverValues() {
+  var vals = {};
+  document.querySelectorAll('.lever-toggle').forEach(function(el) {
+    var id = el.id.replace('row-','');
+    vals[id] = { active: el.classList.contains('active'), pct: parseFloat(el.getAttribute('data-pct')||0) };
+  });
+  return vals;
+}
 function calcSim() {
-  // Update row highlight
-  LEVER_IDS.forEach(id => {
-    const cb = document.getElementById(id);
-    const rowId = 'row-' + id.replace('lev-', '');
-    const row = document.getElementById(rowId);
-    if (row) row.classList.toggle('checked', cb.checked);
-  });
-
-  const laneEl = document.getElementById('sim-lane');
-  const [milesStr, isPriorityStr] = laneEl.value.split('|');
-  const miles = parseInt(milesStr);
-  const isPriority = isPriorityStr === 'true';
-
-  const pallets = Math.max(1, Math.min(26, parseInt(document.getElementById('sim-pallets').value) || 1));
-
-  // Distance band
-  let band, bandLabel;
-  if (miles < 250)      { band = 3; bandLabel = 'Short-haul (3×)'; }
-  else if (miles < 750) { band = 2; bandLabel = 'Mid-range (2×)'; }
-  else                   { band = 1; bandLabel = 'Long-haul (1×)'; }
-
-  const palletMiles = pallets * miles;
-  const coreCredit  = palletMiles * BASE_RATE * band;
-
-  // Levers
-  let totalBonus = 0;
-  const activeLevers = [];
-  LEVER_IDS.forEach(id => {
-    const cb = document.getElementById(id);
-    if (cb.checked) {
-      const v = parseFloat(cb.value);
-      totalBonus += v;
-      activeLevers.push({ name: LEVER_NAMES[id], value: v });
-    }
-  });
-  const cappedBonus = Math.min(totalBonus, BONUS_CAP);
-  const multiplier  = 1 + cappedBonus;
-  const formulaCredit = coreCredit * multiplier;
-
-  // Quote estimate
-  const quote = 129.50 * (1 + (pallets - 1) * 0.87) + 0.157 * pallets * miles;
-  const cap   = quote * MARKUP_CAP;
-  const creditEarned = Math.min(formulaCredit, cap);
-  const capBinding   = formulaCredit > cap;
-
-  // Update DOM
-  document.getElementById('sim-pm').textContent    = palletMiles.toLocaleString();
-  document.getElementById('sim-band').textContent   = bandLabel;
-  document.getElementById('sim-core').textContent   = '$' + coreCredit.toFixed(2);
-  document.getElementById('sim-bonus').textContent  = '+' + Math.round(cappedBonus * 100) + '%';
-  document.getElementById('sim-formula').textContent = '$' + formulaCredit.toFixed(2);
-  document.getElementById('sim-cap').textContent    = '$' + cap.toFixed(2);
-  document.getElementById('sim-quote').textContent  = '$' + quote.toFixed(2);
-  document.getElementById('sim-credit-earned').textContent = '$' + creditEarned.toFixed(2);
-
-  // Lever detail
-  if (activeLevers.length > 0) {
-    document.getElementById('sim-lever-detail').textContent =
-      activeLevers.map(l => l.name).join(', ');
-  } else {
-    document.getElementById('sim-lever-detail').textContent = 'None selected';
-  }
-
-  // Cap note
-  const capNoteEl = document.getElementById('sim-cap-note');
-  if (capBinding) {
-    capNoteEl.textContent = 'Cap applies — formula $' + formulaCredit.toFixed(2) + ' > cap $' + cap.toFixed(2);
-    capNoteEl.style.color = 'rgba(255,180,0,0.8)';
-  } else {
-    capNoteEl.textContent = "Cap doesn't bind ($" + formulaCredit.toFixed(2) + ' < $' + cap.toFixed(2) + ')';
-    capNoteEl.style.color = 'var(--color-text-muted)';
-  }
-
-  // Auto-check priority lever if lane is priority
-  const prioCb = document.getElementById('lev-priorityLane');
-  if (isPriority && !prioCb.checked) {
-    // Don't force it — user can toggle, just note
-  }
+  var levers = getLeverValues ? getLeverValues() : {};
+  var lane = document.getElementById('sim-lane');
+  var pallets = parseInt((document.getElementById('sim-pallets')||{value:3}).value)||3;
+  var laneData = lane ? JSON.parse(lane.options[lane.selectedIndex].getAttribute('data-lane')||'{}') : {miles:380,priority:true};
+  var miles = laneData.miles||380;
+  var rpm=0.157,rpp=129.50,scale=0.87;
+  var quote=rpp*(1+(pallets-1)*scale)+rpm*pallets*miles;
+  var pm=pallets*miles;
+  var distMult = miles<250?3:miles<=1000?2:1;
+  var band = miles<250?'Short (3×)':miles<=1000?'Mid (2×)':'Long (1×)';
+  var core=pm*0.003*distMult;
+  
+  var bonusSum=0;
+  Object.values(levers).forEach(function(l){if(l.active)bonusSum+=l.pct;});
+  var bonusCapped=Math.min(1.50,bonusSum);
+  var formula=core*(1+bonusCapped);
+  var cap=quote*0.20;
+  var credit=Math.min(formula,cap);
+  
+  var el=function(id){return document.getElementById(id);};
+  if(el('sim-credit'))el('sim-credit').textContent='$'+credit.toFixed(2);
+  if(el('sim-quote'))el('sim-quote').textContent='$'+quote.toFixed(2);
+  if(el('sim-pm'))el('sim-pm').textContent=pm.toLocaleString();
+  if(el('sim-band'))el('sim-band').textContent=band;
+  if(el('sim-core'))el('sim-core').textContent='$'+core.toFixed(2);
+  if(el('sim-bonus'))el('sim-bonus').textContent=(bonusCapped>0?'+':'')+(bonusCapped*100).toFixed(0)+'%';
+  if(el('sim-formula'))el('sim-formula').textContent='$'+formula.toFixed(2);
+  if(el('sim-cap'))el('sim-cap').textContent='$'+cap.toFixed(2);
+  var capMsg = formula>cap?'Cap binds ($'+formula.toFixed(2)+' → $'+cap.toFixed(2)+')':'Cap doesn\'t bind ($'+formula.toFixed(2)+' < $'+cap.toFixed(2)+')';
+  if(el('sim-cap-msg'))el('sim-cap-msg').textContent=capMsg;
+  var contribs = [];
+  Object.entries(levers).forEach(function(e){var k=e[0],v=e[1];if(v.active)contribs.push(k.replace(/([A-Z])/g,' $1').toLowerCase()+': +$'+(core*v.pct).toFixed(2));});
+  if(el('sim-contribs'))el('sim-contribs').textContent=contribs.length?contribs.join(' · '):'None selected';
 }
 
 // ── Savings Calculator ────────────────────────────────────────────────────
