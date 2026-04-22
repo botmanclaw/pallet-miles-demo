@@ -5,972 +5,1481 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pallet Miles — Warp</title>
 <style>
-/* ══ DESIGN SYSTEM ══════════════════════════════════════ */
 :root {
   --color-surface-0: #16161a;
   --color-surface-1: #212126;
   --color-surface-2: #27272d;
   --color-border: #2e2e35;
-  --color-border-subtle: #242429;
   --color-text-primary: #ffffff;
   --color-text-muted: #a0a0ab;
-  --color-text-faint: #6b6b75;
+  --color-text-secondary: #d4d4d8;
   --color-warp-green: #00FF33;
   --color-warp-green-dim: #00CC29;
   --color-warp-green-glow: rgba(0,255,51,0.08);
   --color-warp-green-soft: rgba(0,255,51,0.12);
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
 }
-*,*::before,*::after{box-sizing:border-box;}
-*{margin:0;padding:0;}
-body{background:var(--color-surface-0);color:var(--color-text-primary);font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:14px;line-height:1.5;min-height:100vh;}
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  background: var(--color-surface-0);
+  color: var(--color-text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  padding: 0 0 48px;
+}
+button { font-family: inherit; }
 
-/* ══ LAYOUT ══════════════════════════════════════════════ */
-.page{max-width:1160px;margin:0 auto;padding:0 28px 80px;}
+/* ── Keyframes ── */
+@keyframes truckRoll { from { transform: translateX(-120px) } to { transform: translateX(110vw) } }
+@keyframes dashScroll { from { background-position: 0 0 } to { background-position: -80px 0 } }
+@keyframes creditPop {
+  0%   { opacity:0; transform:translateY(6px) scale(0.85) }
+  15%  { opacity:1; transform:translateY(0) scale(1) }
+  75%  { opacity:1; transform:translateY(-22px) }
+  100% { opacity:0; transform:translateY(-36px) }
+}
+@keyframes countPulse {
+  0%,100% { text-shadow: 0 0 20px rgba(0,255,51,0.3) }
+  50%      { text-shadow: 0 0 40px rgba(0,255,51,0.7) }
+}
+@keyframes barSlide { from { width: 0 } }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(24px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+@keyframes tierGlow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,255,51,0) }
+  50%      { box-shadow: 0 0 20px 4px rgba(0,255,51,0.25) }
+}
+@keyframes shipTruck {
+  0%,100% { transform: translateX(0) }
+  50%      { transform: translateX(10px) }
+}
+@keyframes earnBadge {
+  0%,100% { opacity:0.4; transform: translateY(0) }
+  50%      { opacity:1;   transform: translateY(-8px) }
+}
 
-/* ══ TOP NAV ═════════════════════════════════════════════ */
-.top-nav{display:flex;align-items:center;gap:12px;padding:20px 0 16px;border-bottom:1px solid var(--color-border-subtle);margin-bottom:30px;}
-.nav-logo{font-size:20px;font-weight:900;letter-spacing:-.5px;color:var(--color-warp-green);text-shadow:0 0 18px rgba(0,255,51,.4);}
-.nav-sep{color:var(--color-border);font-size:22px;font-weight:200;}
-.nav-page{font-size:15px;font-weight:600;}
-.nav-right{margin-left:auto;display:flex;align-items:center;gap:12px;}
-.credits-pill{display:flex;align-items:center;gap:6px;background:var(--color-warp-green-soft);border:1px solid rgba(0,255,51,.2);border-radius:99px;padding:5px 14px;font-size:12px;font-weight:700;color:var(--color-warp-green);}
-.credits-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--color-warp-green);box-shadow:0 0 6px rgba(0,255,51,.7);animation:dotPulse 2s ease-in-out infinite;}
-@keyframes dotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.8);}}
-.nav-label{background:rgba(255,255,255,.04);border:1px solid var(--color-border);border-radius:99px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--color-text-faint);letter-spacing:.05em;}
+/* ── Range input styling ── */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 99px;
+  cursor: pointer;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--color-warp-green);
+  box-shadow: 0 0 8px rgba(0,255,51,0.5);
+  cursor: pointer;
+}
+input[type=range]::-moz-range-thumb {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--color-warp-green);
+  box-shadow: 0 0 8px rgba(0,255,51,0.5);
+  cursor: pointer;
+  border: none;
+}
 
-/* ══ HERO ════════════════════════════════════════════════ */
-.hero-row{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:22px;}
-.hero-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--color-warp-green);opacity:.8;margin-bottom:5px;}
-.hero-title{font-size:30px;font-weight:900;letter-spacing:-1px;line-height:1.1;margin-bottom:8px;}
-.hero-sub{font-size:14px;color:var(--color-text-muted);max-width:440px;line-height:1.6;}
-.balance-card{background:var(--color-surface-1);border:1px solid rgba(0,255,51,.15);border-radius:var(--radius-xl);padding:20px 26px;min-width:230px;position:relative;overflow:hidden;flex-shrink:0;}
-.balance-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top right,rgba(0,255,51,.07),transparent 65%);pointer-events:none;}
-.bal-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-faint);margin-bottom:5px;}
-.bal-amount{font-size:38px;font-weight:900;color:var(--color-warp-green);letter-spacing:-1.5px;line-height:1;animation:glowPulse 3s ease-in-out infinite;}
-@keyframes glowPulse{0%,100%{text-shadow:0 0 18px rgba(0,255,51,.3);}50%{text-shadow:0 0 36px rgba(0,255,51,.55),0 0 60px rgba(0,255,51,.15);}}
-.bal-meta{font-size:11px;color:var(--color-text-faint);margin-top:4px;}
-.bal-stats{display:flex;gap:16px;margin-top:12px;padding-top:12px;border-top:1px solid var(--color-border-subtle);}
-.bstat .v{font-size:15px;font-weight:800;}
-.bstat .l{font-size:10px;color:var(--color-text-faint);margin-top:1px;}
+/* ── Tab bar ── */
+.tab-bar {
+  border-bottom: 1px solid var(--color-border);
+  padding: 0 40px;
+  display: flex;
+  gap: 0;
+  background: var(--color-surface-0);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  padding: 16px 20px 14px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  transition: color 0.15s ease, border-color 0.15s ease;
+  margin-bottom: -1px;
+  white-space: nowrap;
+}
+.tab-btn.active {
+  font-weight: 700;
+  color: var(--color-warp-green);
+  border-bottom-color: var(--color-warp-green);
+}
 
-/* ══ HIGHWAY ═════════════════════════════════════════════ */
-.highway-wrap{border-radius:var(--radius-xl);overflow:hidden;border:1px solid var(--color-border);margin-bottom:28px;position:relative;}
-.highway{background:#0c0c10;height:112px;position:relative;overflow:hidden;}
-.shoulder{position:absolute;left:0;right:0;height:2px;background:rgba(255,255,255,.055);z-index:1;}
-.shoulder-top{top:20px;}
-.shoulder-bot{bottom:20px;}
-.lane-dash{position:absolute;top:50%;left:0;width:200%;height:3px;transform:translateY(-50%);background:repeating-linear-gradient(90deg,rgba(255,255,255,.1) 0,rgba(255,255,255,.1) 28px,transparent 28px,transparent 50px);animation:dashMove .52s linear infinite;z-index:1;}
-@keyframes dashMove{from{transform:translateY(-50%) translateX(0);}to{transform:translateY(-50%) translateX(-50px);}}
-.lane-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:280px;height:60px;background:radial-gradient(ellipse,rgba(0,255,51,.06),transparent 70%);pointer-events:none;z-index:0;}
-.hwy-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.55);border:1px solid rgba(0,255,51,.3);border-radius:99px;padding:7px 24px;font-size:12px;font-weight:900;letter-spacing:.22em;color:var(--color-warp-green);text-transform:uppercase;text-shadow:0 0 14px rgba(0,255,51,.6);backdrop-filter:blur(6px);white-space:nowrap;z-index:5;animation:bdgPulse 4s ease-in-out infinite;}
-@keyframes bdgPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,255,51,0);}50%{box-shadow:0 0 18px 2px rgba(0,255,51,.1);}}
+/* ── Tab panels ── */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
 
-/* TRUCKS - pure CSS, no JS */
-@keyframes truckRoll{from{transform:translateX(-160px);}to{transform:translateX(110vw);}}
-.truck{position:absolute;font-size:26px;line-height:1;z-index:3;pointer-events:none;animation:truckRoll linear infinite;filter:drop-shadow(0 2px 4px rgba(0,0,0,.6));}
-.t1{top:16px;animation-duration:9s;animation-delay:0s;}
-.t2{top:66px;animation-duration:12s;animation-delay:-5.5s;}
-.t3{top:16px;animation-duration:7.5s;animation-delay:-3.5s;}
-.t4{top:66px;animation-duration:14s;animation-delay:-10s;}
-.t5{top:16px;animation-duration:10s;animation-delay:-7s;}
-.t6{top:66px;animation-duration:8.5s;animation-delay:-2s;}
+/* ── Highway ── */
+.highway {
+  position: relative;
+  height: 280px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+}
+.highway-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(16,16,16,0.6) 0%, transparent 30%, transparent 70%, rgba(16,16,16,0.6) 100%);
+  pointer-events: none;
+}
+.truck-lane-bg {
+  position: absolute;
+  left: 0; right: 0;
+  height: 36px;
+  background: rgba(255,255,255,0.025);
+}
+.truck-dash {
+  position: absolute;
+  left: 0; right: 0;
+  height: 2px;
+  background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.18) 0, rgba(255,255,255,0.18) 48px, transparent 48px, transparent 80px);
+  animation: dashScroll 2.4s linear infinite;
+}
+.truck-wrap {
+  position: absolute;
+  will-change: transform;
+}
+.credit-pop-badge {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 900;
+  background: rgba(0,20,8,0.88);
+  border-radius: 99px;
+  padding: 4px 10px;
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
 
-/* ══ TABS ════════════════════════════════════════════════ */
-.tab-bar{display:flex;gap:0;border-bottom:1px solid var(--color-border);margin-bottom:26px;}
-.tab{padding:10px 22px;font-size:13px;font-weight:500;color:var(--color-text-muted);cursor:pointer;border:none;border-bottom:2px solid transparent;margin-bottom:-1px;background:none;font-family:inherit;transition:all .15s;white-space:nowrap;}
-.tab.active{color:var(--color-warp-green);border-bottom-color:var(--color-warp-green);font-weight:600;}
-.tab:hover:not(.active){color:var(--color-text-primary);}
-.tab-panel{display:none;}
-.tab-panel.active{display:block;}
+/* ── Tier progress ── */
+.tier-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px 24px;
+  animation: tierGlow 4s ease-in-out infinite;
+}
+.progress-track {
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  height: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 99px;
+  animation: barSlide 1.2s ease-out both;
+  transition: width 0.8s ease-out;
+}
 
-/* ══ CARDS ═══════════════════════════════════════════════ */
-.card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px 24px;}
-.card-title{font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.card-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-faint);margin:28px 0 14px;}
+/* ── Levers grid ── */
+.levers-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.lever-card {
+  background: rgba(0,20,8,0.6);
+  border: 1px solid rgba(0,255,51,0.15);
+  border-radius: 14px;
+  padding: 20px 20px 18px;
+}
+.lever-bonus {
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--color-warp-green);
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 0 0 16px rgba(0,255,51,0.5);
+}
+.lever-label { font-size: 14px; font-weight: 700; color: var(--color-text-primary); margin-bottom: 6px; line-height: 1.3; }
+.lever-desc  { font-size: 12px; color: var(--color-text-muted); line-height: 1.5; }
 
-/* ══ STEPS (HOW IT WORKS) ════════════════════════════════ */
-.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
-.step-card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;transition:border-color .15s;}
-.step-card:hover{border-color:rgba(0,255,51,.15);}
-.step-num{width:28px;height:28px;border-radius:50%;background:var(--color-warp-green-soft);border:1px solid rgba(0,255,51,.2);color:var(--color-warp-green);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
-.step-title{font-size:13px;font-weight:700;margin-bottom:6px;}
-.step-desc{font-size:12px;color:var(--color-text-muted);line-height:1.55;}
+/* ── Refer slot card ── */
+.refer-slot {
+  background: rgba(0,20,8,0.6);
+  border: 1px solid rgba(0,255,51,0.25);
+  border-radius: 16px;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.open-badge {
+  background: rgba(0,255,51,0.12);
+  border: 1px solid rgba(0,255,51,0.3);
+  border-radius: 99px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--color-warp-green);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.invite-btn {
+  background: rgba(0,255,51,0.08);
+  border: 1px solid rgba(0,255,51,0.2);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(0,255,51,0.45);
+  cursor: not-allowed;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
 
-/* ══ 9-LEVER GRID ════════════════════════════════════════ */
-.lever-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;}
-.lever-card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:16px;transition:border-color .15s,background .15s;}
-.lever-card:hover{border-color:rgba(0,255,51,.18);background:rgba(0,255,51,.02);}
-.lever-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;}
-.lever-icon{font-size:20px;line-height:1;}
-.lv-badge{background:var(--color-warp-green-soft);color:var(--color-warp-green);border:1px solid rgba(0,255,51,.2);border-radius:99px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;}
-.lever-name{font-size:12px;font-weight:700;margin-bottom:4px;}
-.lever-desc{font-size:11px;color:var(--color-text-muted);line-height:1.45;}
+/* ── Simulator ── */
+.sim-card {
+  background: rgba(0,20,8,0.7);
+  border: 1px solid rgba(0,255,51,0.2);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 28px;
+}
+.sim-select, .sim-input {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.sim-select:focus, .sim-input:focus { border-color: rgba(0,255,51,0.4); }
+.sim-select { width: 100%; cursor: pointer; }
+.sim-input  { width: 100%; }
+.sim-lever-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  user-select: none;
+}
+.sim-lever-row:hover { background: rgba(0,255,51,0.05); border-color: rgba(0,255,51,0.2); }
+.sim-lever-row.checked { background: rgba(0,20,8,0.7); border-color: rgba(0,255,51,0.35); }
+.sim-lever-row input[type=checkbox] {
+  width: 16px; height: 16px;
+  accent-color: var(--color-warp-green);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.credit-earned-number {
+  font-size: 56px;
+  font-weight: 900;
+  color: var(--color-warp-green);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  animation: countPulse 3s ease-in-out infinite;
+}
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+}
+.result-row:last-child { border-bottom: none; }
+.result-label { color: var(--color-text-muted); }
+.result-val   { font-weight: 700; color: var(--color-text-primary); }
+.result-val.green { color: var(--color-warp-green); }
 
-/* ══ LANES TABLE ═════════════════════════════════════════ */
-.table-wrap{overflow:hidden;border:1px solid var(--color-border);border-radius:var(--radius-lg);}
-table{width:100%;border-collapse:collapse;}
-th{background:var(--color-surface-2);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--color-text-faint);padding:10px 16px;text-align:left;border-bottom:1px solid var(--color-border);}
-td{padding:9px 16px;font-size:13px;border-bottom:1px solid var(--color-border-subtle);}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(255,255,255,.012);}
-.pdot{width:7px;height:7px;border-radius:50%;background:var(--color-warp-green);display:inline-block;box-shadow:0 0 6px rgba(0,255,51,.5);margin-right:5px;vertical-align:middle;}
-.badge-offnet{font-size:10px;font-weight:600;color:var(--color-text-faint);background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:4px;padding:2px 6px;}
-.chk{color:var(--color-warp-green);}
-.dsh{color:var(--color-text-faint);}
+/* ── How it works 3-col ── */
+.hiw-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--color-border);
+}
+.hiw-col {
+  padding: 32px 32px 28px;
+  border-right: 1px solid var(--color-border);
+  animation: fadeUp 0.5s ease-out both;
+}
+.hiw-col:last-child { border-right: none; }
 
-/* ══ MAXY DIVIDENDS TAB ══════════════════════════════════ */
-.maxy-layout{display:grid;grid-template-columns:420px 1fr;gap:22px;align-items:start;}
-.form-group{margin-bottom:13px;}
-label.lbl{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-muted);margin-bottom:5px;}
-input[type="number"],select{background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-primary);padding:8px 12px;font-size:13px;font-family:inherit;width:100%;transition:border-color .15s,box-shadow .15s;}
-input[type="number"]:focus,select:focus{outline:none;border-color:var(--color-warp-green);box-shadow:0 0 0 3px rgba(0,255,51,.07);}
-select option{background:var(--color-surface-2);}
-.two-col{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+/* ── Tier table ── */
+.tier-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.tier-cell {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 20px 16px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
 
-/* Lever checkboxes */
-.lever-checks{display:flex;flex-direction:column;gap:6px;margin-top:6px;}
-.lci{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--color-border);border-radius:var(--radius-md);cursor:pointer;transition:border-color .12s,background .12s;}
-.lci:hover{border-color:rgba(0,255,51,.2);background:rgba(0,255,51,.025);}
-.lci input[type="checkbox"]{width:14px;height:14px;accent-color:var(--color-warp-green);cursor:pointer;flex-shrink:0;}
-.lci-label{flex:1;font-size:12px;color:var(--color-text-muted);}
-.lci-pct{font-size:11px;font-weight:700;color:var(--color-warp-green);}
+/* ── Lanes table ── */
+.lanes-table-header {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 20px;
+}
+.lanes-table-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+.lanes-table-row:last-child { border-bottom: none; }
+.priority-row { background: rgba(0,255,51,0.04); }
+.alt-row { background: rgba(255,255,255,0.015); }
 
-/* Results */
-.result-hero{background:var(--color-surface-0);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:22px;margin-bottom:14px;}
-.result-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-faint);margin-bottom:6px;}
-.result-big{font-size:44px;font-weight:900;color:var(--color-warp-green);letter-spacing:-2px;line-height:1;text-shadow:0 0 26px rgba(0,255,51,.22);transition:all .2s;}
-.result-pct{font-size:12px;color:var(--color-text-muted);margin-top:4px;}
-.divider{height:1px;background:var(--color-border-subtle);margin:16px 0;}
+/* ── Max tab nine-levers grid ── */
+.max-lever-card {
+  background: rgba(0,20,8,0.6);
+  border: 1px solid rgba(0,255,51,0.15);
+  border-radius: 16px;
+  padding: 22px 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-.br-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--color-border-subtle);font-size:12px;}
-.br-row:last-child{border-bottom:none;}
-.br-label{color:var(--color-text-muted);}
-.br-val{font-weight:600;font-variant-numeric:tabular-nums;}
-.br-row.totrow{font-size:13px;font-weight:700;border-top:1px solid var(--color-border);border-bottom:none;margin-top:6px;padding-top:10px;}
-.br-row.totrow .br-val{color:var(--color-warp-green);}
-.br-row.caprow .br-val{color:#f59e0b;}
-
-.al-row{display:flex;justify-content:space-between;padding:5px 0;font-size:12px;border-bottom:1px solid var(--color-border-subtle);}
-.al-row:last-of-type{border-bottom:none;}
-.al-pct{color:var(--color-warp-green);font-weight:700;}
-
-/* Ineligible state */
-.ineligible-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px;text-align:center;}
-.ineligible-icon{font-size:40px;opacity:.3;}
-.ineligible-title{font-size:14px;font-weight:700;}
-.ineligible-desc{font-size:12px;color:var(--color-text-muted);max-width:260px;line-height:1.55;}
-
-/* Worked example box */
-.example-card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;margin-bottom:14px;}
-.example-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--color-text-faint);margin-bottom:14px;}
-.ex-step{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--color-border-subtle);}
-.ex-step:last-child{border-bottom:none;}
-.ex-lbl{font-size:11px;font-weight:700;color:var(--color-text-muted);margin-bottom:2px;}
-.ex-formula{font-size:11px;color:var(--color-text-faint);font-family:'SF Mono',Consolas,monospace;}
-.ex-val{font-size:14px;font-weight:700;white-space:nowrap;}
-.ex-green{color:var(--color-warp-green);font-size:22px;}
-
-/* Comparison card */
-.comp-card{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:18px;margin-top:14px;}
-.comp-row{display:grid;grid-template-columns:1fr 90px 90px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-border-subtle);font-size:12px;gap:8px;}
-.comp-row:first-child{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--color-text-faint);}
-.comp-row:last-child{border-bottom:none;}
-.comp-provider{font-weight:600;}
-.comp-price{font-variant-numeric:tabular-nums;}
-.comp-warp{color:var(--color-warp-green);font-weight:700;}
-
-/* ══ REFER TAB ═══════════════════════════════════════════ */
-.refer-layout{display:grid;grid-template-columns:1fr 360px;gap:24px;}
-.ref-slots{display:flex;flex-direction:column;gap:9px;margin-bottom:14px;}
-.ref-slot{display:flex;align-items:center;gap:14px;padding:13px 16px;border:1px solid var(--color-border);border-radius:var(--radius-md);background:var(--color-surface-2);transition:border-color .15s;}
-.ref-slot.filled{border-color:rgba(0,255,51,.18);background:rgba(0,255,51,.03);}
-.ref-slot.empty{border-style:dashed;opacity:.55;}
-.ref-slot.pending{border-color:rgba(245,158,11,.25);}
-.ref-avatar{width:38px;height:38px;border-radius:50%;background:var(--color-surface-1);border:1px solid var(--color-border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
-.ref-slot.filled .ref-avatar{background:var(--color-warp-green-soft);border-color:rgba(0,255,51,.25);}
-.ref-info{flex:1;}
-.ref-name{font-size:13px;font-weight:600;}
-.ref-meta{font-size:11px;color:var(--color-text-faint);margin-top:2px;}
-.ref-empty{font-size:13px;color:var(--color-text-faint);flex:1;}
-.badge-earned{font-size:13px;font-weight:800;color:var(--color-warp-green);}
-.badge-pending{font-size:11px;font-weight:600;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:99px;padding:3px 9px;}
-.rtb{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:var(--color-warp-green-glow);border:1px solid rgba(0,255,51,.14);border-radius:var(--radius-md);margin-bottom:14px;}
-.rtb-lbl{font-size:12px;color:var(--color-text-muted);}
-.rtb-val{font-size:20px;font-weight:900;color:var(--color-warp-green);}
-.ref-link-row{display:flex;gap:8px;align-items:center;}
-.ref-link-input{flex:1;background:var(--color-surface-2);border:1px solid var(--color-border);border-radius:var(--radius-md);color:var(--color-text-muted);padding:9px 12px;font-size:12px;font-family:'SF Mono',Consolas,monospace;}
-.btn-copy{background:var(--color-warp-green-soft);border:1px solid rgba(0,255,51,.2);border-radius:var(--radius-md);color:var(--color-warp-green);padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}
-.btn-copy:hover{background:rgba(0,255,51,.18);}
-.how-panel{background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;}
-.how-step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--color-border-subtle);}
-.how-step:last-child{border-bottom:none;}
-.how-num{width:24px;height:24px;border-radius:50%;background:var(--color-surface-0);border:1px solid var(--color-border);color:var(--color-text-muted);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.how-title{font-size:13px;font-weight:600;margin-bottom:2px;}
-.how-desc{font-size:12px;color:var(--color-text-muted);line-height:1.5;}
-
-/* ══ GLIDE PATH ══════════════════════════════════════════ */
-.glide-timeline{display:flex;align-items:flex-end;gap:0;margin:20px 0 12px;height:120px;}
-.glide-bar{flex:1;border-radius:var(--radius-sm) var(--radius-sm) 0 0;position:relative;cursor:default;transition:filter .15s;}
-.glide-bar:hover{filter:brightness(1.2);}
-.glide-bar.active{outline:1px solid rgba(0,255,51,.4);}
-.glide-label{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:var(--color-text-faint);white-space:nowrap;}
-.glide-cap{position:absolute;top:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:var(--color-text-primary);white-space:nowrap;}
-.glide-years{display:flex;gap:0;margin-bottom:28px;}
-.glide-year{flex:1;font-size:10px;color:var(--color-text-faint);text-align:center;padding-top:6px;border-top:1px solid var(--color-border-subtle);}
-
-/* ══ INFO BOXES ══════════════════════════════════════════ */
-.info-box{background:rgba(255,255,255,.018);border:1px solid var(--color-border-subtle);border-radius:var(--radius-md);padding:13px 16px;font-size:12px;color:var(--color-text-muted);line-height:1.6;}
-.info-box strong{color:var(--color-text-primary);}
-.info-box.green{background:var(--color-warp-green-glow);border-color:rgba(0,255,51,.12);}
-.info-box.amber{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.15);}
-
-/* ══ MISC ════════════════════════════════════════════════ */
-.section-h{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-faint);margin:28px 0 14px;}
-.tag{display:inline-flex;align-items:center;gap:4px;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600;}
-.tag.green{background:var(--color-warp-green-soft);color:var(--color-warp-green);border:1px solid rgba(0,255,51,.2);}
-.tag.gray{background:rgba(255,255,255,.04);color:var(--color-text-faint);border:1px solid var(--color-border);}
-.tag.amber{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2);}
-.mt8{margin-top:8px;}
-.mt14{margin-top:14px;}
-.mt20{margin-top:20px;}
-.gap-col{display:flex;flex-direction:column;gap:14px;}
-.gap-row{display:flex;gap:14px;flex-wrap:wrap;}
-.flex-between{display:flex;align-items:center;justify-content:space-between;}
+/* ── Savings calculator ── */
+.savings-results {
+  background: rgba(0,20,8,0.6);
+  border: 1px solid rgba(0,255,51,0.2);
+  border-radius: 16px;
+  padding: 28px 32px;
+}
 </style>
 </head>
 <body>
-<div class="page">
 
-<!-- ══ NAV ══════════════════════════════════════════════ -->
-<div class="top-nav">
-  <div class="nav-logo">⚡ Warp</div>
-  <div class="nav-sep">/</div>
-  <div class="nav-page">Pallet Miles</div>
-  <div class="nav-right">
-    <div class="credits-pill">
-      <span class="dot"></span>
-      $1,247.50 credits
-    </div>
-    <div class="nav-label">BETA</div>
-  </div>
-</div>
-
-<!-- ══ HERO ══════════════════════════════════════════════ -->
-<div class="hero-row">
-  <div>
-    <div class="hero-eyebrow">Density Dividends Program</div>
-    <h1 class="hero-title">Pallet Miles</h1>
-    <p class="hero-sub">Earn credits on every Warp LTL shipment. The denser you make our network, the more you earn back. Redeem on any future booking.</p>
-  </div>
-  <div class="balance-card">
-    <div class="bal-lbl">Your Credit Balance</div>
-    <div class="bal-amount">$1,247.50</div>
-    <div class="bal-meta">Available to redeem</div>
-    <div class="bal-stats">
-      <div class="bstat">
-        <div class="v">$3,812</div>
-        <div class="l">Earned all-time</div>
-      </div>
-      <div class="bstat">
-        <div class="v">$2,564</div>
-        <div class="l">Redeemed</div>
-      </div>
-      <div class="bstat">
-        <div class="v">47</div>
-        <div class="l">Shipments</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══ HIGHWAY ═══════════════════════════════════════════ -->
-<div class="highway-wrap">
-  <div class="highway">
-    <div class="shoulder shoulder-top"></div>
-    <div class="shoulder shoulder-bot"></div>
-    <div class="lane-dash"></div>
-    <div class="lane-glow"></div>
-    <div class="hwy-badge">PALLET MILES</div>
-    <div class="truck t1">🚛</div>
-    <div class="truck t2">🚛</div>
-    <div class="truck t3">🚛</div>
-    <div class="truck t4">🚛</div>
-    <div class="truck t5">🚛</div>
-    <div class="truck t6">🚛</div>
-  </div>
-</div>
-
-<!-- ══ TABS ═══════════════════════════════════════════════ -->
+<!-- ── Tab bar ─────────────────────────────────────────────────────────────── -->
 <div class="tab-bar">
-  <button class="tab active" onclick="switchTab('overview')">Overview</button>
-  <button class="tab" onclick="switchTab('maxy')">Max Your Dividends</button>
-  <button class="tab" onclick="switchTab('refer')">Refer &amp; Earn</button>
+  <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+  <button class="tab-btn" onclick="switchTab('max')">Max Your Dividends</button>
+  <button class="tab-btn" onclick="switchTab('refer')">Refer &amp; Earn</button>
 </div>
 
-<!-- ══════════════════════════════════════════════════════
-     TAB 1: OVERVIEW
-     ══════════════════════════════════════════════════════ -->
-<div class="tab-panel active" id="tab-overview">
+<!-- ════════════════════════════════════════════════════════════════════════════
+     OVERVIEW TAB
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-overview" class="tab-panel active">
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(160deg,rgba(0,180,50,0.12) 0%,rgba(0,100,30,0.06) 40%,rgba(0,0,0,0) 100%);border-bottom:1px solid var(--color-border);padding:40px 40px 32px;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:32px;flex-wrap:wrap;margin-bottom:32px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:10px;height:10px;border-radius:50%;background:var(--color-warp-green);box-shadow:0 0 0 4px rgba(0,255,51,0.2);"></div>
+          <span style="font-size:12px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.12em;">PALLET MILES</span>
+        </div>
+        <div style="font-size:72px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.04em;line-height:1;animation:countPulse 3s ease-in-out infinite;">$0.00</div>
+        <div style="font-size:15px;color:var(--color-text-muted);margin-top:8px;font-weight:500;">credits available to redeem</div>
+        <div style="font-size:12px;color:var(--color-text-muted);margin-top:6px;">
+          Markup capped at <span style="color:var(--color-warp-green);font-weight:700;">20% today</span>, ratcheting down to <span style="color:var(--color-warp-green);font-weight:700;">10% by 2030</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;">
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px 24px;min-width:140px;">
+          <div style="font-size:10px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:6px;">LIFETIME EARNED</div>
+          <div style="font-size:26px;font-weight:800;color:var(--color-text-primary);">$0.00</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px 24px;min-width:140px;">
+          <div style="font-size:10px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:6px;">PALLET-MILES YTD</div>
+          <div style="font-size:26px;font-weight:800;color:var(--color-text-primary);">0</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px 24px;min-width:140px;">
+          <div style="font-size:10px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:6px;">ACTIVE LANES</div>
+          <div style="font-size:26px;font-weight:800;color:var(--color-text-primary);">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tier Progress -->
+    <div style="margin-bottom:24px;">
+      <div class="tier-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:4px;">CURRENT TIER</div>
+            <div style="font-size:22px;font-weight:900;color:rgba(180,180,180,0.8);letter-spacing:-0.02em;">Starter</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:4px;">PALLET-MILES THIS YEAR</div>
+            <div style="font-size:22px;font-weight:900;color:var(--color-text-primary);">0</div>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" style="width:0%;background:linear-gradient(90deg,rgba(180,180,180,0.44),rgba(180,180,180,0.8));"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="font-size:12px;color:var(--color-text-muted);">
+            Earn <span style="color:rgba(180,180,180,0.8);font-weight:700;">5% bonus multiplier</span> on credits
+          </div>
+          <div style="font-size:12px;color:var(--color-text-muted);text-align:right;">
+            <span style="font-weight:700;">10,000 PM</span> to <span style="color:#4488ff;font-weight:700;">Builder</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highway -->
+    <div class="highway">
+      <!-- Lane 1: y=100, green, LAX→SFO, 7s delay 0s -->
+      <div class="truck-lane-bg" style="top:128px;"></div>
+      <div class="truck-dash" style="top:145px;"></div>
+      <div style="position:absolute;top:152px;left:24px;font-size:9px;font-weight:800;color:var(--color-warp-green);opacity:0.7;letter-spacing:0.08em;">LAX</div>
+      <div style="position:absolute;top:152px;right:24px;font-size:9px;font-weight:800;color:var(--color-warp-green);opacity:0.5;letter-spacing:0.08em;">SFO</div>
+      <div class="truck-wrap" style="top:122px;animation:truckRoll 7s linear infinite;animation-delay:0s;filter:drop-shadow(0 0 8px rgba(0,255,51,0.6));">
+        <svg width="72" height="36" viewBox="0 0 72 36">
+          <rect x="0" y="6" width="44" height="22" rx="3" fill="#00FF33" opacity="0.9"/>
+          <rect x="44" y="12" width="20" height="16" rx="2" fill="#00FF33"/>
+          <polygon points="44,12 64,12 60,4 44,4" fill="#00FF33" opacity="0.7"/>
+          <rect x="3" y="9" width="16" height="9" rx="1.5" fill="rgba(0,0,0,0.35)"/>
+          <circle cx="13" cy="31" r="5" fill="#111" stroke="#00FF33" stroke-width="2"/>
+          <circle cx="13" cy="31" r="2" fill="#00FF33"/>
+          <circle cx="54" cy="31" r="5" fill="#111" stroke="#00FF33" stroke-width="2"/>
+          <circle cx="54" cy="31" r="2" fill="#00FF33"/>
+        </svg>
+      </div>
+      <div class="credit-pop-badge" style="top:90px;left:65%;color:#00FF33;border:1px solid rgba(0,255,51,0.27);text-shadow:0 0 12px #00FF33;animation:creditPop 7s linear infinite;animation-delay:0s;">instant credit</div>
+
+      <!-- Lane 2: y=158, dim green, EWR→MDT, 9s delay -3s -->
+      <div class="truck-lane-bg" style="top:186px;"></div>
+      <div class="truck-dash" style="top:203px;"></div>
+      <div style="position:absolute;top:210px;left:24px;font-size:9px;font-weight:800;color:#00CC29;opacity:0.7;letter-spacing:0.08em;">EWR</div>
+      <div style="position:absolute;top:210px;right:24px;font-size:9px;font-weight:800;color:#00CC29;opacity:0.5;letter-spacing:0.08em;">MDT</div>
+      <div class="truck-wrap" style="top:180px;animation:truckRoll 9s linear infinite;animation-delay:-3s;filter:drop-shadow(0 0 8px rgba(0,204,41,0.6));">
+        <svg width="72" height="36" viewBox="0 0 72 36">
+          <rect x="0" y="6" width="44" height="22" rx="3" fill="#00CC29" opacity="0.9"/>
+          <rect x="44" y="12" width="20" height="16" rx="2" fill="#00CC29"/>
+          <polygon points="44,12 64,12 60,4 44,4" fill="#00CC29" opacity="0.7"/>
+          <rect x="3" y="9" width="16" height="9" rx="1.5" fill="rgba(0,0,0,0.35)"/>
+          <circle cx="13" cy="31" r="5" fill="#111" stroke="#00CC29" stroke-width="2"/>
+          <circle cx="13" cy="31" r="2" fill="#00CC29"/>
+          <circle cx="54" cy="31" r="5" fill="#111" stroke="#00CC29" stroke-width="2"/>
+          <circle cx="54" cy="31" r="2" fill="#00CC29"/>
+        </svg>
+      </div>
+      <div class="credit-pop-badge" style="top:148px;left:65%;color:#00CC29;border:1px solid rgba(0,204,41,0.27);text-shadow:0 0 12px #00CC29;animation:creditPop 9s linear infinite;animation-delay:-3s;">instant credit</div>
+
+      <!-- Lane 3: y=216, green, LAX→EWR, 11s delay -6s -->
+      <div class="truck-lane-bg" style="top:244px;"></div>
+      <div class="truck-dash" style="top:261px;"></div>
+      <div style="position:absolute;top:268px;left:24px;font-size:9px;font-weight:800;color:#00FF33;opacity:0.7;letter-spacing:0.08em;">LAX</div>
+      <div style="position:absolute;top:268px;right:24px;font-size:9px;font-weight:800;color:#00FF33;opacity:0.5;letter-spacing:0.08em;">EWR</div>
+      <div class="truck-wrap" style="top:238px;animation:truckRoll 11s linear infinite;animation-delay:-6s;filter:drop-shadow(0 0 8px rgba(0,255,51,0.6));">
+        <svg width="72" height="36" viewBox="0 0 72 36">
+          <rect x="0" y="6" width="44" height="22" rx="3" fill="#00FF33" opacity="0.9"/>
+          <rect x="44" y="12" width="20" height="16" rx="2" fill="#00FF33"/>
+          <polygon points="44,12 64,12 60,4 44,4" fill="#00FF33" opacity="0.7"/>
+          <rect x="3" y="9" width="16" height="9" rx="1.5" fill="rgba(0,0,0,0.35)"/>
+          <circle cx="13" cy="31" r="5" fill="#111" stroke="#00FF33" stroke-width="2"/>
+          <circle cx="13" cy="31" r="2" fill="#00FF33"/>
+          <circle cx="54" cy="31" r="5" fill="#111" stroke="#00FF33" stroke-width="2"/>
+          <circle cx="54" cy="31" r="2" fill="#00FF33"/>
+        </svg>
+      </div>
+      <div class="credit-pop-badge" style="top:206px;left:65%;color:#00FF33;border:1px solid rgba(0,255,51,0.27);text-shadow:0 0 12px #00FF33;animation:creditPop 11s linear infinite;animation-delay:-6s;">instant credit</div>
+
+      <div class="highway-overlay"></div>
+    </div>
+  </div>
 
   <!-- How it works -->
-  <div class="section-h">How It Works</div>
-  <div class="steps-grid">
-    <div class="step-card">
-      <div class="step-num">1</div>
-      <div class="step-title">Ship with Warp LTL</div>
-      <div class="step-desc">Every Warp LTL booking on an eligible lane earns Pallet Miles credits. Credits are calculated after delivery confirmation.</div>
+  <div class="hiw-grid">
+    <!-- Step 01 -->
+    <div class="hiw-col" style="animation-delay:0s;">
+      <div style="margin-bottom:20px;">
+        <svg width="100%" height="120" viewBox="0 0 300 120">
+          <rect x="0" y="60" width="300" height="40" fill="rgba(255,255,255,0.03)"/>
+          <line x1="0" y1="80" x2="300" y2="80" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+          <line x1="20" y1="80" x2="46" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <line x1="76" y1="80" x2="102" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <line x1="132" y1="80" x2="158" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <line x1="188" y1="80" x2="214" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <line x1="244" y1="80" x2="270" y2="80" stroke="rgba(255,255,255,0.15)" stroke-width="2"/>
+          <g style="animation:shipTruck 3s ease-in-out infinite;">
+            <rect x="80" y="44" width="80" height="28" rx="4" fill="#00FF33" opacity="0.9"/>
+            <rect x="160" y="50" width="32" height="22" rx="3" fill="#00FF33"/>
+            <polygon points="160,50 192,50 186,44 160,44" fill="#00FF33" opacity="0.7"/>
+            <rect x="84" y="48" width="24" height="12" rx="2" fill="rgba(0,0,0,0.4)"/>
+            <circle cx="100" cy="74" r="7" fill="#1a1a1a" stroke="#00FF33" stroke-width="2.5"/>
+            <circle cx="100" cy="74" r="3" fill="#00FF33"/>
+            <circle cx="168" cy="74" r="7" fill="#1a1a1a" stroke="#00FF33" stroke-width="2.5"/>
+            <circle cx="168" cy="74" r="3" fill="#00FF33"/>
+          </g>
+          <g style="animation:earnBadge 3s ease-in-out infinite;">
+            <rect x="190" y="20" width="88" height="24" rx="12" fill="#00CC29" stroke="#2e2e35" stroke-width="1"/>
+            <text x="234" y="36" text-anchor="middle" font-size="10" fill="#00FF33" font-weight="800">+120 PM</text>
+          </g>
+        </svg>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.1em;margin-bottom:8px;">STEP 01</div>
+      <div style="font-size:16px;font-weight:800;color:var(--color-text-primary);margin-bottom:10px;line-height:1.3;">Ship and earn automatically</div>
+      <div style="font-size:13px;color:var(--color-text-muted);line-height:1.7;">Every shipment earns credits — pallets × miles × $0.003, multiplied by distance band: Short-haul (under 250 miles) earns 3×, Mid-range earns 2×, Long-haul earns 1×.</div>
     </div>
-    <div class="step-card">
-      <div class="step-num">2</div>
-      <div class="step-title">Credits auto-calculate</div>
-      <div class="step-desc">Base rate: pallets × miles × $0.003 × distance band. Stack bonuses with 9 levers — pickup flexibility, bulk pallets, advance booking &amp; more.</div>
+
+    <!-- Step 02 -->
+    <div class="hiw-col" style="animation-delay:0.1s;">
+      <div style="margin-bottom:20px;">
+        <svg width="100%" height="120" viewBox="0 0 300 120">
+          <g>
+            <rect x="60" y="95" width="180" height="16" rx="3" fill="rgba(180,180,180,0.5)"/>
+            <text x="150" y="106" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="700">Starter 5%</text>
+          </g>
+          <g>
+            <rect x="40" y="75" width="220" height="16" rx="3" fill="rgba(68,136,255,0.5)"/>
+            <text x="150" y="86" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="700">Builder 10%</text>
+          </g>
+          <g>
+            <rect x="30" y="55" width="240" height="16" rx="3" fill="rgba(184,255,87,0.5)"/>
+            <text x="150" y="66" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="700">Partner 20%</text>
+          </g>
+          <g>
+            <rect x="20" y="35" width="260" height="16" rx="3" fill="rgba(255,215,0,0.5)"/>
+            <text x="150" y="46" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="700">Anchor 30%</text>
+          </g>
+          <g>
+            <rect x="10" y="15" width="280" height="16" rx="3" fill="rgba(0,255,51,0.6)"/>
+            <text x="150" y="26" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.7)" font-weight="700">Network 40%</text>
+          </g>
+        </svg>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:#4488ff;letter-spacing:0.1em;margin-bottom:8px;">STEP 02</div>
+      <div style="font-size:16px;font-weight:800;color:var(--color-text-primary);margin-bottom:10px;line-height:1.3;">Stack up to 9 levers for more</div>
+      <div style="font-size:13px;color:var(--color-text-muted);line-height:1.7;">Stack up to 9 levers to earn up to +150% more: offer flexible pickup and delivery windows, take the latest Must-Arrive-By date, book 7+ days ahead, ship 2+ pallets, pick up or drop off near a Warp crossdock, or keep the trip local (under 60 miles).</div>
     </div>
-    <div class="step-card">
-      <div class="step-num">3</div>
-      <div class="step-title">Redeem on any booking</div>
-      <div class="step-desc">Credits apply to any future Warp LTL invoice. No per-shipment cap on redemption — invoices can go all the way to $0.</div>
+
+    <!-- Step 03 -->
+    <div class="hiw-col" style="animation-delay:0.2s;">
+      <div style="margin-bottom:20px;">
+        <svg width="100%" height="140" viewBox="0 0 300 140">
+          <rect x="60" y="20" width="180" height="104" rx="10" fill="rgba(0,200,60,0.06)" stroke="#2e2e35" stroke-width="1.5"/>
+          <rect x="60" y="20" width="180" height="28" rx="10" fill="#00CC29"/>
+          <rect x="60" y="34" width="180" height="14" fill="#00CC29"/>
+          <text x="76" y="38" font-size="8" fill="#00FF33" font-weight="700" letter-spacing="0.08em">INVOICE</text>
+          <text x="76" y="60" font-size="9" fill="rgba(255,255,255,0.5)" font-weight="500">Cost (quote × 0.80)</text>
+          <text x="224" y="60" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.7)" font-weight="700">$960.00</text>
+          <text x="76" y="74" font-size="9" fill="rgba(255,255,255,0.5)" font-weight="500">Warp markup (20% cap · 2026)</text>
+          <text x="224" y="74" text-anchor="end" font-size="9" fill="rgba(255,255,255,0.7)" font-weight="700">$240.00</text>
+          <text x="76" y="88" font-size="9" fill="#00FF33" font-weight="700">Credits earned</text>
+          <text x="224" y="88" text-anchor="end" font-size="9" fill="#00FF33" font-weight="900">-$48.00</text>
+          <line x1="76" y1="94" x2="224" y2="94" stroke="#2e2e35" stroke-width="1"/>
+          <text x="76" y="108" font-size="10" fill="var(--color-text-primary)" font-weight="800">You pay</text>
+          <text x="224" y="108" text-anchor="end" font-size="10" fill="#00FF33" font-weight="900">$1,152.00</text>
+        </svg>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.1em;margin-bottom:8px;">STEP 03</div>
+      <div style="font-size:16px;font-weight:800;color:var(--color-text-primary);margin-bottom:10px;line-height:1.3;">Credits unlock on delivery</div>
+      <div style="font-size:13px;color:var(--color-text-muted);line-height:1.7;">Credits unlock when your shipment is delivered. They expire after 90 days. Apply them to any future Warp shipment — there's no cap on redemption. Invoices can go all the way to $0.</div>
     </div>
   </div>
 
-  <!-- 9 levers -->
-  <div class="section-h" style="margin-top:32px;">The 9 Bonus Levers</div>
-  <div class="lever-grid" id="overview-levers"></div>
-
-  <!-- Top 20 Lanes -->
-  <div class="section-h" style="margin-top:32px;">Top 20 Eligible Lanes</div>
-  <div class="table-wrap">
-    <table id="lanes-table">
-      <thead>
-        <tr>
-          <th>Lane</th>
-          <th>Miles</th>
-          <th>Distance Band</th>
-          <th>Priority</th>
-          <th>Pickup Prox</th>
-          <th>Dropoff Prox</th>
-          <th>Credits Eligible</th>
-        </tr>
-      </thead>
-      <tbody id="lanes-tbody"></tbody>
-    </table>
+  <!-- 9 Levers Grid -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">EARN LEVERS — STACK UP TO +150%</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">
+      Every lever you pull adds to your credit multiplier. Stack all levers on one shipment for up to <span style="color:var(--color-warp-green);font-weight:700;">+150% more credits</span>.
+    </div>
+    <div class="levers-grid">
+      <div class="lever-card"><div class="lever-bonus">+50%</div><div class="lever-label">Priority growth lane</div><div class="lever-desc">Lane is in the 7 growth-priority corridors Warp is densifying</div></div>
+      <div class="lever-card"><div class="lever-bonus">+10%</div><div class="lever-label">Pickup window ≥4hrs</div><div class="lever-desc">Lets routing batch your load with others</div></div>
+      <div class="lever-card"><div class="lever-bonus">+10%</div><div class="lever-label">Delivery window ≥4hrs</div><div class="lever-desc">Creates routing slack for Warp</div></div>
+      <div class="lever-card"><div class="lever-bonus">+15%</div><div class="lever-label">MABD flexibility</div><div class="lever-desc">Take the latest Must-Arrive-By date; Warp gets max routing freedom</div></div>
+      <div class="lever-card"><div class="lever-bonus">+15%</div><div class="lever-label">Book 7+ days ahead</div><div class="lever-desc">Lead time lets Warp plan around capacity</div></div>
+      <div class="lever-card"><div class="lever-bonus">+10%</div><div class="lever-label">2–3 pallets</div><div class="lever-desc">Fuller trucks, lower touch cost</div></div>
+      <div class="lever-card"><div class="lever-bonus">+25%</div><div class="lever-label">4+ pallets</div><div class="lever-desc">Full consolidation — biggest bulk bonus</div></div>
+      <div class="lever-card"><div class="lever-bonus">+10%</div><div class="lever-label">Pickup near Warp dock</div><div class="lever-desc">Short drayage, lower pickup cost</div></div>
+      <div class="lever-card"><div class="lever-bonus">+10%</div><div class="lever-label">Dropoff near Warp dock</div><div class="lever-desc">Short last-mile, lower delivery cost</div></div>
+      <div class="lever-card"><div class="lever-bonus">+30%</div><div class="lever-label">Local trip (&lt;60 mi)</div><div class="lever-desc">Genuinely cheap to serve; maximum bonus</div></div>
+    </div>
+    <div style="margin-top:16px;font-size:12px;color:var(--color-text-muted);font-style:italic;">Stack all levers: max +150% cumulative. Note: 2–3 pallets and 4+ pallets are mutually exclusive — apply one or the other.</div>
   </div>
 
-  <!-- Cap info -->
-  <div class="info-box green mt20">
-    <strong>The 20% Cap:</strong> Credits earned on any single shipment are capped at 20% of your quote (Warp's approximate markup). This is the current launch cap — see the Glide Path for how it changes over time.
+  <!-- How credits are calculated + tiers -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">HOW CREDITS ARE CALCULATED</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:16px;line-height:1.6;">
+      Base rate: <span style="color:var(--color-warp-green);font-weight:700;">$0.003 per pallet-mile</span>
+      &nbsp;&middot;&nbsp;Distance: <span style="color:var(--color-warp-green);font-weight:700;">Short 3&times; &nbsp;Mid 2&times; &nbsp;Long 1&times;</span>
+      &nbsp;&middot;&nbsp;Max bonus: <span style="color:var(--color-warp-green);font-weight:700;">+150%</span>
+      &nbsp;&middot;&nbsp;Cap per shipment: <span style="color:var(--color-warp-green);font-weight:700;">20% of quote (2026 rate &middot; glide path to 10% by 2030)</span>
+      &nbsp;&middot;&nbsp;Expiry: <span style="color:var(--color-warp-green);font-weight:700;">90 days after delivery</span>
+    </div>
+    <div class="tier-row">
+      <div class="tier-cell" style="border-color:rgba(180,180,180,0.4);">
+        <div style="font-size:13px;font-weight:800;color:rgba(180,180,180,0.8);letter-spacing:0.05em;margin-bottom:4px;">Starter</div>
+        <div style="font-size:26px;font-weight:900;color:rgba(180,180,180,0.8);letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">5%</div>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-bottom:8px;">bonus multiplier</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:rgba(255,255,255,0.04);border-radius:99px;padding:4px 0;">0-10K PM</div>
+      </div>
+      <div class="tier-cell" style="border-color:rgba(68,136,255,0.4);">
+        <div style="font-size:13px;font-weight:800;color:#4488ff;letter-spacing:0.05em;margin-bottom:4px;">Builder</div>
+        <div style="font-size:26px;font-weight:900;color:#4488ff;letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">10%</div>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-bottom:8px;">bonus multiplier</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:rgba(255,255,255,0.04);border-radius:99px;padding:4px 0;">10K-50K PM</div>
+      </div>
+      <div class="tier-cell" style="border-color:rgba(184,255,87,0.4);">
+        <div style="font-size:13px;font-weight:800;color:#b8ff57;letter-spacing:0.05em;margin-bottom:4px;">Partner</div>
+        <div style="font-size:26px;font-weight:900;color:#b8ff57;letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">20%</div>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-bottom:8px;">bonus multiplier</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:rgba(255,255,255,0.04);border-radius:99px;padding:4px 0;">50K-250K PM</div>
+      </div>
+      <div class="tier-cell" style="border-color:rgba(255,215,0,0.4);">
+        <div style="font-size:13px;font-weight:800;color:#ffd700;letter-spacing:0.05em;margin-bottom:4px;">Anchor</div>
+        <div style="font-size:26px;font-weight:900;color:#ffd700;letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">30%</div>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-bottom:8px;">bonus multiplier</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:rgba(255,255,255,0.04);border-radius:99px;padding:4px 0;">250K-1M PM</div>
+      </div>
+      <div class="tier-cell" style="border-color:rgba(0,255,51,0.4);">
+        <div style="font-size:13px;font-weight:800;color:#00FF33;letter-spacing:0.05em;margin-bottom:4px;">Network</div>
+        <div style="font-size:26px;font-weight:900;color:#00FF33;letter-spacing:-0.02em;line-height:1;margin-bottom:6px;">40%</div>
+        <div style="font-size:10px;color:var(--color-text-muted);margin-bottom:8px;">bonus multiplier</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);background:rgba(255,255,255,0.04);border-radius:99px;padding:4px 0;">1M+ PM</div>
+      </div>
+    </div>
   </div>
 
-  <!-- Glide Path -->
-  <div class="section-h" style="margin-top:32px;">Glide Path — 2026 → 2030</div>
-  <div class="card" style="padding:28px 28px 36px;">
-    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:20px;max-width:600px;line-height:1.6;">
-      Each cap reduction is a <strong style="color:var(--color-text-primary);">public event</strong> tied to quarterly margin milestones. Your deal only improves over time. Warp's real margin can still grow above the cap as the network densifies — that's the <em>density dividend</em>.
+  <!-- Top 20 Lanes Table -->
+  <div style="padding:0 40px;margin-top:48px;">
+    <div style="font-size:20px;font-weight:800;color:var(--color-text-primary);letter-spacing:-0.03em;margin-bottom:6px;">Top 20 Pallet Miles Lanes</div>
+    <div style="font-size:13px;color:var(--color-text-muted);line-height:1.6;margin-bottom:20px;">
+      These 20 lanes are eligible for Pallet Miles credits. The 7 priority lanes (marked ★) earn +50% bonus.
     </div>
-    <div class="glide-timeline">
-      <div class="glide-bar" style="background:linear-gradient(180deg,rgba(0,255,51,.45) 0%,rgba(0,255,51,.15) 100%);height:100%;">
-        <div class="glide-cap">20%</div>
-        <div class="glide-label">2026</div>
+    <div style="background:var(--color-surface-1);border:1px solid var(--color-border);border-radius:16px;overflow:hidden;">
+      <div class="lanes-table-header">
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;">Lane</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:right;padding-right:24px;">Annual Shipments</div>
+        <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);text-transform:uppercase;letter-spacing:0.07em;text-align:right;">Credit Share</div>
       </div>
-      <div class="glide-bar" style="background:linear-gradient(180deg,rgba(0,255,51,.38) 0%,rgba(0,255,51,.12) 100%);height:80%;">
-        <div class="glide-cap">16%</div>
-        <div class="glide-label">2027</div>
+      <!-- Priority lanes -->
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>San Francisco, CA</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">10,637</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
       </div>
-      <div class="glide-bar" style="background:linear-gradient(180deg,rgba(0,255,51,.30) 0%,rgba(0,255,51,.10) 100%);height:65%;">
-        <div class="glide-cap">13%</div>
-        <div class="glide-label">2028</div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>San Francisco, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Los Angeles, CA</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">7,269</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
       </div>
-      <div class="glide-bar" style="background:linear-gradient(180deg,rgba(0,255,51,.23) 0%,rgba(0,255,51,.08) 100%);height:55%;">
-        <div class="glide-cap">11%</div>
-        <div class="glide-label">2029</div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Newark, NJ</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Harrisburg, PA</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">4,033</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
       </div>
-      <div class="glide-bar" style="background:linear-gradient(180deg,rgba(0,255,51,.18) 0%,rgba(0,255,51,.06) 100%);height:50%;">
-        <div class="glide-cap">10%</div>
-        <div class="glide-label">2030</div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Newark, NJ</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,953</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Newark, NJ</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Miami, FL</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,789</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Seattle, WA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,653</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Newark, NJ</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>New York, NY</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,506</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Phoenix, AZ</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,430</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Salt Lake City, UT</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,416</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>San Diego, CA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,369</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>San Francisco, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Sacramento, CA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,165</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Las Vegas, NV</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">3,058</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Newark, NJ</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Scranton, PA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">2,875</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Denver, CO</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">2,685</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Portland, OR</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">2,671</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Sacramento, CA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">2,573</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span style="font-size:14px;color:#00FF33;">★</span>
+          <span>Los Angeles, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Dallas, TX</span>
+          <span style="font-size:10px;font-weight:700;color:#00FF33;background:rgba(0,255,51,0.12);border:1px solid rgba(0,255,51,0.25);border-radius:99px;padding:2px 8px;margin-left:4px;">Priority +50%</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">2,405</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Dallas, TX</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Houston, TX</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">1,897</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row priority-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>Newark, NJ</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Philadelphia, PA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">1,546</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
+      </div>
+      <div class="lanes-table-row">
+        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);font-weight:500;">
+          <span>San Francisco, CA</span><svg width="14" height="10" viewBox="0 0 24 10" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="2"><path d="M1 5h22M17 1l5 4-5 4"/></svg><span>Seattle, WA</span>
+        </div>
+        <div style="font-size:13px;color:var(--color-text-muted);text-align:right;padding-right:24px;">1,531</div>
+        <div style="font-size:13px;font-weight:800;color:#00FF33;text-align:right;">5-40%</div>
       </div>
     </div>
-    <div style="height:36px;"></div>
-    <div style="font-size:11px;color:var(--color-text-faint);line-height:1.6;max-width:560px;">
-      Triggers: 2027 drop when blended margin ≤18% for 2 consecutive quarters · 2028 when ≤15% · 2029 when ≤12% · 2030 permanent target.
-    </div>
-
-    <!-- Side-by-side comparison -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px;max-width:560px;">
-      <div class="info-box green">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-warp-green);margin-bottom:8px;">2026 — Launch</div>
-        <div style="font-size:12px;color:var(--color-text-muted);">Same LAX→SFO shipment<br>Quote: <strong style="color:var(--color-text-primary);">$534</strong></div>
-        <div style="margin-top:8px;font-size:12px;">Markup (20%): <strong>$106.80</strong></div>
-        <div style="font-size:12px;color:var(--color-warp-green);">Credits up to: <strong>$106.80</strong></div>
-      </div>
-      <div class="info-box" style="border-color:rgba(255,255,255,.08);">
-        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--color-text-faint);margin-bottom:8px;">2030 — Permanent</div>
-        <div style="font-size:12px;color:var(--color-text-muted);">Same LAX→SFO shipment<br>Quote: <strong style="color:var(--color-text-primary);">$534</strong></div>
-        <div style="margin-top:8px;font-size:12px;">Markup (10%): <strong>$53.40</strong></div>
-        <div style="font-size:12px;color:var(--color-text-faint);">Credits up to: <strong>$53.40</strong></div>
-      </div>
+    <div style="margin-top:12px;font-size:12px;color:var(--color-text-muted);line-height:1.6;">
+      Credit share depends on your tier (Starter 5% → Network 40%). All tiers earn on all lanes. ★ Priority lanes earn an additional +50% bonus.
     </div>
   </div>
 
 </div><!-- /tab-overview -->
 
 
-<!-- ══════════════════════════════════════════════════════
-     TAB 2: MAX YOUR DIVIDENDS
-     ══════════════════════════════════════════════════════ -->
-<div class="tab-panel" id="tab-maxy">
+<!-- ════════════════════════════════════════════════════════════════════════════
+     MAX YOUR DIVIDENDS TAB
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-max" class="tab-panel">
 
-  <!-- Worked Example (static, LAX→SFO) -->
-  <div class="example-card">
-    <div class="example-title">Worked Example — LAX → SFO, 6 Pallets, $534 Quote</div>
-    <div class="ex-step">
-      <div>
-        <div class="ex-lbl">Step 1 — Pallet-Miles</div>
-        <div class="ex-formula">6 pallets × 380 mi = 2,280 pallet-miles</div>
-      </div>
-      <div class="ex-val">2,280</div>
+  <!-- Quote Simulator -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">QUOTE SIMULATOR — LIVE CREDIT CALCULATOR</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:28px;line-height:1.6;">
+      Pick a lane, enter pallets, pull levers — see your credit earned in real time.
     </div>
-    <div class="ex-step">
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+      <!-- Lane dropdown -->
       <div>
-        <div class="ex-lbl">Step 2 — Core Credit (Mid band 2×)</div>
-        <div class="ex-formula">2,280 × $0.003 × 2 = $13.68</div>
+        <label style="display:block;font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:8px;">SELECT LANE</label>
+        <select id="sim-lane" class="sim-select" onchange="calcSim()">
+          <option value="380|true">LAX → San Francisco, CA (380 mi) ★ Priority</option>
+          <option value="380|true">SFO → Los Angeles, CA (380 mi) ★ Priority</option>
+          <option value="200|true">EWR → Harrisburg, PA (200 mi) ★ Priority</option>
+          <option value="2800|true">LAX → Newark, NJ (2,800 mi) ★ Priority</option>
+          <option value="1280|true">EWR → Miami, FL (1,280 mi) ★ Priority</option>
+          <option value="1020|true">LAX → Denver, CO (1,020 mi) ★ Priority</option>
+          <option value="1430|true">LAX → Dallas, TX (1,430 mi) ★ Priority</option>
+          <option value="1135|false">LAX → Seattle, WA (1,135 mi)</option>
+          <option value="15|false">EWR → New York, NY (15 mi)</option>
+          <option value="370|false">LAX → Phoenix, AZ (370 mi)</option>
+          <option value="690|false">LAX → Salt Lake City, UT (690 mi)</option>
+          <option value="120|false">LAX → San Diego, CA (120 mi)</option>
+          <option value="90|false">SFO → Sacramento, CA (90 mi)</option>
+          <option value="270|false">LAX → Las Vegas, NV (270 mi)</option>
+          <option value="120|false">EWR → Scranton, PA (120 mi)</option>
+          <option value="960|false">LAX → Portland, OR (960 mi)</option>
+          <option value="390|false">LAX → Sacramento, CA (390 mi)</option>
+          <option value="240|false">Dallas, TX → Houston, TX (240 mi)</option>
+          <option value="95|false">EWR → Philadelphia, PA (95 mi)</option>
+          <option value="810|false">SFO → Seattle, WA (810 mi)</option>
+        </select>
       </div>
-      <div class="ex-val">$13.68</div>
+      <!-- Pallets input -->
+      <div>
+        <label style="display:block;font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:8px;">NUMBER OF PALLETS (1–26)</label>
+        <input id="sim-pallets" class="sim-input" type="number" min="1" max="26" value="3" oninput="calcSim()">
+      </div>
     </div>
-    <div class="ex-step">
-      <div>
-        <div class="ex-lbl">Step 3 — Bonus Levers (priority + pickup + 4+ pallets)</div>
-        <div class="ex-formula">$13.68 × (1 + 0.50 + 0.10 + 0.25) = $13.68 × 1.85</div>
-      </div>
-      <div class="ex-val">$25.31</div>
+
+    <!-- Levers -->
+    <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">SELECT LEVERS TO APPLY</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:28px;" id="lever-list">
+      <label class="sim-lever-row" id="row-priorityLane">
+        <input type="checkbox" id="lev-priorityLane" value="0.50" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Priority growth lane</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+50% — one of 7 priority corridors</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+50%</span>
+      </label>
+      <label class="sim-lever-row" id="row-flexPickup">
+        <input type="checkbox" id="lev-flexPickup" value="0.10" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Pickup window ≥4hrs</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — batch routing flexibility</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
+      </label>
+      <label class="sim-lever-row" id="row-flexDelivery">
+        <input type="checkbox" id="lev-flexDelivery" value="0.10" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Delivery window ≥4hrs</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — routing slack</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
+      </label>
+      <label class="sim-lever-row" id="row-flexMabd">
+        <input type="checkbox" id="lev-flexMabd" value="0.15" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">MABD flexibility</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+15% — take latest must-arrive-by date</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+15%</span>
+      </label>
+      <label class="sim-lever-row" id="row-advanceBooking">
+        <input type="checkbox" id="lev-advanceBooking" value="0.15" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Book 7+ days ahead</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+15% — lead time for capacity planning</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+15%</span>
+      </label>
+      <label class="sim-lever-row" id="row-bulk2to3">
+        <input type="checkbox" id="lev-bulk2to3" value="0.10" onchange="syncBulk('bulk2to3')">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">2–3 pallets</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — fuller trucks (exclusive with 4+)</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
+      </label>
+      <label class="sim-lever-row" id="row-bulk4plus">
+        <input type="checkbox" id="lev-bulk4plus" value="0.25" onchange="syncBulk('bulk4plus')">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">4+ pallets</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+25% — full consolidation (exclusive with 2-3)</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+25%</span>
+      </label>
+      <label class="sim-lever-row" id="row-proxPickup">
+        <input type="checkbox" id="lev-proxPickup" value="0.10" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Pickup near Warp dock</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — short drayage</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
+      </label>
+      <label class="sim-lever-row" id="row-proxDropoff">
+        <input type="checkbox" id="lev-proxDropoff" value="0.10" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Dropoff near Warp dock</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+10% — short last-mile</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+10%</span>
+      </label>
+      <label class="sim-lever-row" id="row-localTrip">
+        <input type="checkbox" id="lev-localTrip" value="0.30" onchange="calcSim()">
+        <span style="flex:1;">
+          <span style="font-size:13px;font-weight:700;color:var(--color-text-primary);">Local trip (&lt;60 mi)</span>
+          <span style="display:block;font-size:11px;color:var(--color-text-muted);">+30% — genuinely cheap to serve</span>
+        </span>
+        <span style="font-size:13px;font-weight:900;color:var(--color-warp-green);">+30%</span>
+      </label>
     </div>
-    <div class="ex-step">
-      <div>
-        <div class="ex-lbl">Step 4 — Cap check (20% of $534 = $106.80)</div>
-        <div class="ex-formula">$25.31 &lt; $106.80 → cap not triggered</div>
+
+    <!-- Result card -->
+    <div class="sim-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:28px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:8px;">CREDIT EARNED</div>
+          <div class="credit-earned-number" id="sim-credit-earned">$0.00</div>
+          <div style="font-size:12px;color:var(--color-text-muted);margin-top:8px;" id="sim-cap-note"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:2px;text-align:right;">
+          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:6px;">ESTIMATED QUOTE</div>
+          <div style="font-size:28px;font-weight:800;color:var(--color-text-primary);" id="sim-quote">$0.00</div>
+        </div>
       </div>
-      <div class="ex-val">✓</div>
-    </div>
-    <div class="ex-step" style="border-bottom:none;">
-      <div>
-        <div class="ex-lbl">Final Credit Earned</div>
-        <div class="ex-formula">4.7% of quote returned as credits</div>
+      <div id="sim-breakdown">
+        <div class="result-row"><span class="result-label">Pallet-miles</span><span class="result-val" id="sim-pm">0</span></div>
+        <div class="result-row"><span class="result-label">Distance band</span><span class="result-val" id="sim-band">—</span></div>
+        <div class="result-row"><span class="result-label">Core credit (PM × $0.003 × band)</span><span class="result-val green" id="sim-core">$0.00</span></div>
+        <div class="result-row"><span class="result-label">Lever bonus</span><span class="result-val green" id="sim-bonus">+0%</span></div>
+        <div class="result-row"><span class="result-label" id="sim-lever-contrib-label">Lever contributions</span><span class="result-val green" id="sim-lever-detail">—</span></div>
+        <div class="result-row"><span class="result-label">Formula credit (core × multiplier)</span><span class="result-val green" id="sim-formula">$0.00</span></div>
+        <div class="result-row"><span class="result-label">Cap (quote × 20%)</span><span class="result-val" id="sim-cap">$0.00</span></div>
       </div>
-      <div class="ex-val ex-green">$25.31</div>
     </div>
   </div>
 
-  <div class="maxy-layout">
-    <!-- LEFT: Inputs -->
-    <div class="gap-col">
-      <div class="card">
-        <div class="card-title">📦 Shipment Details</div>
-        <div class="form-group">
-          <label class="lbl">Lane</label>
-          <select id="inp-lane" onchange="onLaneChange()"></select>
-        </div>
-        <div class="two-col">
-          <div class="form-group">
-            <label class="lbl">Pallets</label>
-            <input type="number" id="inp-pallets" value="6" min="1" max="26" oninput="recalc()">
-          </div>
-          <div class="form-group">
-            <label class="lbl">Miles</label>
-            <input type="number" id="inp-miles" value="380" min="1" oninput="recalc()">
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="lbl">Quote ($)</label>
-          <input type="number" id="inp-quote" value="534" min="1" oninput="recalc()">
-        </div>
-        <div class="two-col">
-          <div class="form-group">
-            <label class="lbl">Days Booked Ahead</label>
-            <input type="number" id="inp-days" value="3" min="0" oninput="recalc()">
-          </div>
-          <div class="form-group">
-            <label class="lbl">Shipments / Year</label>
-            <input type="number" id="inp-annual" value="24" min="1" oninput="recalc()">
-          </div>
-        </div>
+  <!-- Nine Levers (display-only, same as overview) -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">THE NINE LEVERS</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">
+      Stack any combination of these levers on a single shipment to multiply your Pallet Miles credits by up to <span style="color:var(--color-warp-green);font-weight:700;">+150%</span>.
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+50%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Priority growth lane</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lane is in the 7 growth-priority corridors Warp is densifying</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
       </div>
-
-      <div class="card">
-        <div class="card-title">🎛️ Bonus Levers
-          <span class="tag green" id="lever-count-tag">0 active</span>
-        </div>
-        <div class="lever-checks" id="lever-checks"></div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Pickup window ≥4hrs</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lets routing batch your load with others</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Delivery window ≥4hrs</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Creates routing slack for Warp</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+15%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">MABD flexibility</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Take the latest Must-Arrive-By date; Warp gets max routing freedom</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+15%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Book 7+ days ahead</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Lead time lets Warp plan around capacity</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">2–3 pallets</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Fuller trucks, lower touch cost</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+25%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">4+ pallets</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Full consolidation — biggest bulk bonus</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Pickup near Warp dock</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Short drayage, lower pickup cost</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+10%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Dropoff near Warp dock</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Short last-mile, lower delivery cost</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
+      </div>
+      <div class="max-lever-card">
+        <div style="font-size:32px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;line-height:1;text-shadow:0 0 16px rgba(0,255,51,0.5);">+30%</div>
+        <div style="font-size:15px;font-weight:700;color:var(--color-text-primary);line-height:1.3;">Local trip (&lt;60 mi)</div>
+        <div style="font-size:12px;color:var(--color-text-muted);line-height:1.55;">Genuinely cheap to serve; maximum bonus</div>
+        <div style="margin-top:8px;height:22px;border-radius:99px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);width:80px;"></div>
       </div>
     </div>
+    <div style="margin-top:18px;font-size:12px;color:var(--color-text-muted);font-style:italic;line-height:1.6;">
+      Stack all levers: max +150% cumulative. Note: 2–3 pallets and 4+ pallets are mutually exclusive — apply one or the other.
+    </div>
+  </div>
 
-    <!-- RIGHT: Results -->
-    <div class="gap-col">
-      <div id="result-area"></div>
+  <!-- Worked example: LAX→SFO -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">PERFECT SHIPMENT — WORKED EXAMPLE</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">
+      A maxed-out shipment on LAX → SFO, 3 pallets — most levers pulled. Markup capped at 20% today, ratcheting down to 10% by 2030.
+    </div>
+    <div style="background:rgba(0,20,8,0.7);border:1px solid rgba(0,255,51,0.25);border-radius:16px;overflow:hidden;max-width:600px;">
+      <!-- Header -->
+      <div style="background:rgba(0,255,51,0.08);border-bottom:1px solid rgba(0,255,51,0.15);padding:18px 24px;display:flex;align-items:center;gap:12px;">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <path d="M10 2L17 7.5L10 18L3 7.5L10 2Z" fill="#00FF33" opacity="0.9"/>
+        </svg>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:var(--color-text-primary);">LAX → SFO, 3 pallets</div>
+          <div style="font-size:12px;color:var(--color-text-muted);">Most levers pulled</div>
+        </div>
+      </div>
+      <!-- Breakdown -->
+      <div style="padding:20px 24px;">
+        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Quote</span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">$534</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Pallet-miles <span style="font-size:11px;opacity:0.6;">(3 pallets × 380 miles)</span></span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">1,140</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Distance band</span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">Mid-range (2×)</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;"><span style="font-size:13px;color:var(--color-text-muted);">Core credit <span style="font-size:11px;opacity:0.6;">(1,140 PM × $0.003 × 2)</span></span><span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">$6.84</span></div>
+        </div>
+        <div style="margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">LEVERS APPLIED</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Priority growth lane</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+50%</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Pickup window ≥4hrs</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Delivery window ≥4hrs</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>2–3 pallets</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+15%</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;"><span style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--color-text-primary);"><span style="color:#00FF33;font-size:14px;">✓</span>Pickup near Warp dock</span><span style="font-size:13px;font-weight:700;color:#00FF33;">+10%</span></div>
+          <div style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">
+            <span style="font-size:13px;font-weight:700;color:var(--color-text-muted);">Total bonus</span>
+            <span style="font-size:15px;font-weight:900;color:#00FF33;">+95%</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--color-text-muted);letter-spacing:0.08em;margin-bottom:12px;">FORMULA</div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Core credit × multiplier</span><span style="font-size:13px;color:var(--color-text-muted);">$6.84 × 1.95</span></div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;"><span style="font-size:13px;color:var(--color-text-muted);">Markup cap (20% of $534 · 2026)</span><span style="font-size:13px;color:var(--color-text-muted);">$106.80</span></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid rgba(0,255,51,0.2);">
+            <span style="font-size:15px;font-weight:800;color:var(--color-text-primary);">Credit earned</span>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;">
+              <span style="font-size:24px;font-weight:900;color:#00FF33;letter-spacing:-0.02em;text-shadow:0 0 20px rgba(0,255,51,0.4);">$13.34</span>
+              <span style="font-size:11px;color:var(--color-text-muted);">Cap doesn't bind ($13.34 &lt; $106.80)</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
-</div><!-- /tab-maxy -->
-
-
-<!-- ══════════════════════════════════════════════════════
-     TAB 3: REFER & EARN
-     ══════════════════════════════════════════════════════ -->
-<div class="tab-panel" id="tab-refer">
-  <div class="refer-layout">
-    <div>
-      <div class="section-h" style="margin-top:0;">Your 5 Referral Slots</div>
-      <div class="ref-slots">
-        <div class="ref-slot filled">
-          <div class="ref-avatar">🏭</div>
-          <div class="ref-info">
-            <div class="ref-name">Pacific Goods Co.</div>
-            <div class="ref-meta">Referred 3 months ago · 12 shipments</div>
-          </div>
-          <div class="badge-earned">+$500</div>
-        </div>
-        <div class="ref-slot filled">
-          <div class="ref-avatar">📦</div>
-          <div class="ref-info">
-            <div class="ref-name">Bright Supply LLC</div>
-            <div class="ref-meta">Referred 6 weeks ago · 4 shipments</div>
-          </div>
-          <div class="badge-earned">+$500</div>
-        </div>
-        <div class="ref-slot pending">
-          <div class="ref-avatar" style="opacity:.7;">⏳</div>
-          <div class="ref-info">
-            <div class="ref-name">Metro Freight Inc.</div>
-            <div class="ref-meta">First shipment pending</div>
-          </div>
-          <div class="badge-pending">Pending</div>
-        </div>
-        <div class="ref-slot empty">
-          <div class="ref-avatar" style="opacity:.4;">＋</div>
-          <div class="ref-empty">Slot 4 — open</div>
-        </div>
-        <div class="ref-slot empty">
-          <div class="ref-avatar" style="opacity:.4;">＋</div>
-          <div class="ref-empty">Slot 5 — open</div>
-        </div>
+  <!-- Savings Calculator -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:8px;">NETWORK-SCALE SAVINGS CALCULATOR</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:28px;line-height:1.6;">
+      See how credits stack up across your shipping volume. Assumes $500 avg quote, Warp 10% markup, credits return ~50% of margin.
+    </div>
+    <!-- Slider -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:700;color:var(--color-text-primary);">Shipments per month with Warp</span>
+        <span style="font-size:28px;font-weight:900;color:var(--color-warp-green);letter-spacing:-0.02em;" id="slider-val">100</span>
       </div>
-      <div class="rtb">
-        <div class="rtb-lbl">Total Referral Credits Earned</div>
-        <div class="rtb-val">$1,000</div>
-      </div>
-      <div class="section-h">Your Referral Link</div>
-      <div class="ref-link-row">
-        <input class="ref-link-input" readonly value="warp.so/r/acme-freight-7x2p">
-        <button class="btn-copy" onclick="copyLink(this)">Copy Link</button>
-      </div>
-      <div class="info-box mt14">
-        <strong>How referral credits work:</strong> You earn <strong>$500 in Pallet Miles credits</strong> when a company you refer books their first Warp LTL shipment. They also get $250 off their first booking. Win-win.
+      <input type="range" id="savings-slider" min="10" max="2000" step="10" value="100"
+        oninput="calcSavings(this.value)"
+        style="background:linear-gradient(90deg,#00FF33 4.5%,rgba(255,255,255,0.1) 0%);">
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--color-text-muted);">
+        <span>10</span><span>1,000</span><span>2,000</span>
       </div>
     </div>
-
-    <div>
-      <div class="section-h" style="margin-top:0;">How It Works</div>
-      <div class="how-panel">
-        <div class="how-step">
-          <div class="how-num">1</div>
-          <div>
-            <div class="how-title">Share your link</div>
-            <div class="how-desc">Send your unique referral link to a shipper you know. They must be a new Warp customer.</div>
-          </div>
+    <!-- Results -->
+    <div class="savings-results">
+      <div style="font-size:14px;font-weight:700;color:var(--color-text-muted);margin-bottom:20px;">
+        At <span style="color:var(--color-warp-green);font-weight:900;" id="save-shipments">100</span> shipments/month:
+      </div>
+      <div style="display:grid;gap:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:13px;color:var(--color-text-muted);flex:1;">Annual Pallet Miles credits earned</span>
+          <span style="font-size:16px;font-weight:800;color:#00FF33;" id="save-credits">$30,000</span>
         </div>
-        <div class="how-step">
-          <div class="how-num">2</div>
-          <div>
-            <div class="how-title">They book their first shipment</div>
-            <div class="how-desc">Your referral books and completes their first Warp LTL shipment. They get $250 off automatically.</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:13px;color:var(--color-text-muted);flex:1;">Credits as % of freight spend</span>
+          <span style="font-size:16px;font-weight:800;color:#00FF33;" id="save-pct">5.0%</span>
         </div>
-        <div class="how-step">
-          <div class="how-num">3</div>
-          <div>
-            <div class="how-title">You earn $500 in credits</div>
-            <div class="how-desc">$500 Pallet Miles credits land in your balance within 24h of their first delivery confirmation.</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:13px;color:var(--color-text-muted);flex:1;">vs. Industry 30% markup — you save</span>
+          <span style="font-size:22px;font-weight:800;color:#00FF33;letter-spacing:-0.02em;text-shadow:0 0 20px rgba(0,255,51,0.4);" id="save-netsavings">$210,000/year</span>
         </div>
-        <div class="how-step">
-          <div class="how-num">4</div>
-          <div>
-            <div class="how-title">Up to 5 referrals</div>
-            <div class="how-desc">Each account gets 5 referral slots. Max potential: <strong style="color:var(--color-warp-green);">$2,500 in credits</strong>.</div>
-          </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:13px;color:var(--color-text-muted);flex:1;">Effective Warp markup after credits</span>
+          <span style="font-size:16px;font-weight:800;color:var(--color-text-primary);" id="save-effmarkup">4.5%</span>
         </div>
       </div>
-
-      <div class="info-box amber mt14">
-        <strong>Fine print:</strong> Referrals must be net-new Warp customers. Subsidiary or sister companies of existing customers don't qualify. Credits expire 24 months from issuance.
+      <div style="margin-top:8px;font-size:12px;color:rgba(255,255,255,0.3);line-height:1.6;">
+        Industry benchmark assumes 30% markup over base carrier rate. Warp 10% markup with credits applied.
       </div>
     </div>
   </div>
+
+</div><!-- /tab-max -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════════
+     REFER & EARN TAB
+     ════════════════════════════════════════════════════════════════════════════ -->
+<div id="tab-refer" class="tab-panel">
+
+  <!-- Hero -->
+  <div style="background:linear-gradient(160deg,rgba(0,180,50,0.10) 0%,rgba(0,100,30,0.05) 40%,rgba(0,0,0,0) 100%);border-bottom:1px solid var(--color-border);padding:40px 40px 36px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <rect x="2" y="9" width="16" height="10" rx="2" stroke="#00FF33" stroke-width="1.6"/>
+        <path d="M10 9V19" stroke="#00FF33" stroke-width="1.6"/>
+        <path d="M2 13h16" stroke="#00FF33" stroke-width="1.4" stroke-dasharray="2 2"/>
+        <path d="M10 9C10 9 7 6 7 4a3 3 0 016 0c0 2-3 5-3 5z" stroke="#00FF33" stroke-width="1.6"/>
+      </svg>
+      <span style="font-size:12px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.12em;">REFER A SHIPPER</span>
+    </div>
+    <div style="font-size:36px;font-weight:900;color:var(--color-text-primary);letter-spacing:-0.03em;line-height:1.1;margin-bottom:14px;">
+      Refer a shipper, <span style="color:#00FF33;text-shadow:0 0 24px rgba(0,255,51,0.4);">earn $500</span>
+    </div>
+    <div style="font-size:15px;color:var(--color-text-muted);line-height:1.7;max-width:560px;">
+      When they complete 5 loads with Warp, $500 in Pallet Miles credits lands in your account — max 5 referrals, $2,500 lifetime.
+    </div>
+  </div>
+
+  <!-- Referral slots -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:6px;">YOUR REFERRAL SLOTS</div>
+    <div style="font-size:13px;color:var(--color-text-muted);margin-bottom:24px;line-height:1.6;">You have 5 referral slots. Each successful referral earns $500 in Pallet Miles credits.</div>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <!-- Slot 1 -->
+      <div class="refer-slot">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="open-badge">Open</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--color-text-primary);margin-bottom:2px;">Slot 1 of 5</div><div style="font-size:12px;color:var(--color-text-muted);">Open — invite a shipper</div></div>
+        </div>
+        <button class="invite-btn" disabled>Send invite <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(0,255,51,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <!-- Slot 2 -->
+      <div class="refer-slot">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="open-badge">Open</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--color-text-primary);margin-bottom:2px;">Slot 2 of 5</div><div style="font-size:12px;color:var(--color-text-muted);">Open — invite a shipper</div></div>
+        </div>
+        <button class="invite-btn" disabled>Send invite <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(0,255,51,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <!-- Slot 3 -->
+      <div class="refer-slot">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="open-badge">Open</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--color-text-primary);margin-bottom:2px;">Slot 3 of 5</div><div style="font-size:12px;color:var(--color-text-muted);">Open — invite a shipper</div></div>
+        </div>
+        <button class="invite-btn" disabled>Send invite <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(0,255,51,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <!-- Slot 4 -->
+      <div class="refer-slot">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="open-badge">Open</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--color-text-primary);margin-bottom:2px;">Slot 4 of 5</div><div style="font-size:12px;color:var(--color-text-muted);">Open — invite a shipper</div></div>
+        </div>
+        <button class="invite-btn" disabled>Send invite <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(0,255,51,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+      <!-- Slot 5 -->
+      <div class="refer-slot">
+        <div style="display:flex;align-items:center;gap:16px;">
+          <div class="open-badge">Open</div>
+          <div><div style="font-size:13px;font-weight:700;color:var(--color-text-primary);margin-bottom:2px;">Slot 5 of 5</div><div style="font-size:12px;color:var(--color-text-muted);">Open — invite a shipper</div></div>
+        </div>
+        <button class="invite-btn" disabled>Send invite <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="rgba(0,255,51,0.45)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Progress summary + How it works -->
+  <div style="padding:36px 40px;border-bottom:1px solid var(--color-border);">
+    <!-- Progress summary -->
+    <div style="background:rgba(255,255,255,0.04);border:1px solid var(--color-border);border-radius:14px;padding:18px 24px;margin-bottom:36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div style="font-size:13px;color:var(--color-text-muted);">
+        <span style="font-weight:700;color:var(--color-text-primary);">0</span> of 5 slots used
+        &nbsp;·&nbsp;
+        <span style="font-weight:700;color:var(--color-warp-green);">$0</span> earned
+        &nbsp;·&nbsp;
+        <span style="font-weight:700;color:var(--color-text-primary);">$2,500</span> remaining
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:160px;height:6px;background:rgba(255,255,255,0.08);border-radius:99px;overflow:hidden;">
+          <div style="width:0%;height:100%;background:var(--color-warp-green);border-radius:99px;"></div>
+        </div>
+        <span style="font-size:11px;font-weight:700;color:var(--color-text-muted);">0 / 5</span>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div style="font-size:11px;font-weight:800;color:var(--color-text-muted);letter-spacing:0.1em;margin-bottom:20px;">HOW IT WORKS</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px;">
+      <!-- Step 01 -->
+      <div style="background:rgba(0,20,8,0.5);border:1px solid rgba(0,255,51,0.12);border-radius:14px;padding:24px 22px;">
+        <div style="margin-bottom:14px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="#00FF33" stroke-width="1.5" stroke-dasharray="4 2"/>
+            <path d="M9 14h10M15 10l4 4-4 4" stroke="#00FF33" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.1em;margin-bottom:8px;">STEP 01</div>
+        <div style="font-size:14px;font-weight:700;color:var(--color-text-primary);line-height:1.4;">Share your invite link with a freight shipper</div>
+      </div>
+      <!-- Step 02 -->
+      <div style="background:rgba(0,20,8,0.5);border:1px solid rgba(0,255,51,0.12);border-radius:14px;padding:24px 22px;">
+        <div style="margin-bottom:14px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="10" width="20" height="14" rx="3" stroke="#00FF33" stroke-width="1.5"/>
+            <path d="M4 14h20" stroke="#00FF33" stroke-width="1.4" stroke-dasharray="2 2"/>
+            <path d="M14 4v6" stroke="#00FF33" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="14" cy="4" r="2" fill="#00FF33" opacity="0.7"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.1em;margin-bottom:8px;">STEP 02</div>
+        <div style="font-size:14px;font-weight:700;color:var(--color-text-primary);line-height:1.4;">They sign up and ship 5 loads with Warp</div>
+      </div>
+      <!-- Step 03 -->
+      <div style="background:rgba(0,20,8,0.5);border:1px solid rgba(0,255,51,0.12);border-radius:14px;padding:24px 22px;">
+        <div style="margin-bottom:14px;">
+          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="13" stroke="#00FF33" stroke-width="1.5"/>
+            <path d="M9 14l3.5 3.5L20 10" stroke="#00FF33" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-size:10px;font-weight:800;color:var(--color-warp-green);letter-spacing:0.1em;margin-bottom:8px;">STEP 03</div>
+        <div style="font-size:14px;font-weight:700;color:var(--color-text-primary);line-height:1.4;">$500 in Pallet Miles credits added to your account instantly</div>
+      </div>
+    </div>
+
+    <!-- Fine print -->
+    <div style="background:rgba(255,255,255,0.02);border:1px solid var(--color-border);border-radius:10px;padding:14px 18px;font-size:12px;color:var(--color-text-muted);line-height:1.7;">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="vertical-align:middle;margin-right:6px;opacity:0.5;">
+        <circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M7 6v4M7 4.5v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      Credits expire 90 days after earning. Max 5 referrals per account. Referred shipper must be a new Warp customer.
+    </div>
+  </div>
+
 </div><!-- /tab-refer -->
 
-</div><!-- /page -->
 
 <script>
-/* ══════════════════════════════════════════════════════
-   DATA
-   ══════════════════════════════════════════════════════ */
-const BASE_RATE = 0.003;
-const MARKUP_CAP = 0.20;
-const BONUS_CAP = 1.50;
+// ── Tab switching ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const btns = document.querySelectorAll('.tab-btn');
+  const map = { overview: 0, max: 1, refer: 2 };
+  btns[map[tab]].classList.add('active');
+}
 
-const LANES = [
-  {key:'LAX>SFO',name:'LAX → SFO',miles:380,priority:true,proxO:true,proxD:true,eligible:true},
-  {key:'SFO>LAX',name:'SFO → LAX',miles:380,priority:true,proxO:true,proxD:true,eligible:true},
-  {key:'LAX>EWR',name:'LAX → EWR',miles:2750,priority:true,proxO:true,proxD:true,eligible:true},
-  {key:'EWR>MDT',name:'EWR → MDT',miles:170,priority:true,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>DFW',name:'LAX → DFW',miles:1414,priority:true,proxO:true,proxD:true,eligible:true},
-  {key:'LAX>DEN',name:'LAX → DEN',miles:1024,priority:true,proxO:true,proxD:false,eligible:true},
-  {key:'EWR>MIA',name:'EWR → MIA',miles:1260,priority:true,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>SEA',name:'LAX → SEA',miles:1155,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'EWR>JFK',name:'EWR → JFK',miles:20,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>PHX',name:'LAX → PHX',miles:370,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>SLC',name:'LAX → SLC',miles:680,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>SAN',name:'LAX → SAN',miles:120,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'SFO>SMF',name:'SFO → SMF',miles:90,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>LAS',name:'LAX → LAS',miles:270,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'EWR>AVP',name:'EWR → AVP',miles:120,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>PDX',name:'LAX → PDX',miles:970,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>SMF',name:'LAX → SMF',miles:385,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'DFW>IAH',name:'DFW → IAH',miles:240,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'EWR>PHL',name:'EWR → PHL',miles:85,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'SFO>SEA',name:'SFO → SEA',miles:810,priority:false,proxO:true,proxD:false,eligible:true},
-  {key:'LAX>ORD',name:'LAX → ORD (off-network)',miles:2020,priority:false,proxO:true,proxD:false,eligible:false},
-  {key:'LAX>MIA',name:'LAX → MIA (off-network)',miles:2730,priority:false,proxO:true,proxD:false,eligible:false},
+// ── Quote Simulator ────────────────────────────────────────────────────────
+const BASE_RATE   = 0.003;
+const MARKUP_CAP  = 0.20;
+const BONUS_CAP   = 1.50;
+
+const LEVER_IDS = [
+  'lev-priorityLane','lev-flexPickup','lev-flexDelivery',
+  'lev-flexMabd','lev-advanceBooking','lev-bulk2to3','lev-bulk4plus',
+  'lev-proxPickup','lev-proxDropoff','lev-localTrip'
 ];
+const LEVER_NAMES = {
+  'lev-priorityLane':  'Priority lane +50%',
+  'lev-flexPickup':    'Pickup window +10%',
+  'lev-flexDelivery':  'Delivery window +10%',
+  'lev-flexMabd':      'MABD flex +15%',
+  'lev-advanceBooking':'Advance booking +15%',
+  'lev-bulk2to3':      '2–3 pallets +10%',
+  'lev-bulk4plus':     '4+ pallets +25%',
+  'lev-proxPickup':    'Near dock pickup +10%',
+  'lev-proxDropoff':   'Near dock dropoff +10%',
+  'lev-localTrip':     'Local trip +30%',
+};
 
-const LEVERS = [
-  {key:'flexPickup',  label:'Pickup window ≥4hrs',       pct:0.10, icon:'🕐', desc:'Give Warp a 4+ hour pickup window for dock consolidation'},
-  {key:'flexDelivery',label:'Delivery window ≥4hrs',     pct:0.10, icon:'🕓', desc:'Flexible delivery scheduling enables route optimization'},
-  {key:'flexMabd',   label:'MABD flexibility (±1 day)',  pct:0.15, icon:'📅', desc:'Loosening your must-arrive-by-date unlocks more routing options'},
-  {key:'advance7',   label:'Booked 7+ days ahead',       pct:0.15, icon:'📆', desc:'Early bookings help Warp plan consolidation loads in advance'},
-  {key:'bulk4',      label:'4+ pallets on booking',      pct:0.25, icon:'📦', desc:'Larger loads improve trailer utilization significantly'},
-  {key:'proxPickup', label:'Pickup near Warp dock',      pct:0.10, icon:'📍', desc:'Short first-mile drayage reduces cost and emissions'},
-  {key:'proxDropoff',label:'Dropoff near Warp dock',     pct:0.10, icon:'🏁', desc:'Short last-mile drayage on the destination end'},
-  {key:'local',      label:'Local trip (<60mi)',         pct:0.30, icon:'🏙️', desc:'Ultra-short local trips are highly dense and efficient'},
-  {key:'priority',   label:'Priority growth lane',       pct:0.50, icon:'⭐', desc:'Lane is in a Warp priority growth corridor — max bonus'},
-];
-
-/* ══ INIT ═══════════════════════════════════════════════ */
-function init() {
-  buildOverviewLevers();
-  buildLanesTable();
-  buildLaneSelect();
-  buildLeverChecks();
-  recalc();
+function syncBulk(clicked) {
+  if (clicked === 'bulk2to3' && document.getElementById('lev-bulk2to3').checked) {
+    document.getElementById('lev-bulk4plus').checked = false;
+    document.getElementById('row-bulk4plus').classList.remove('checked');
+  }
+  if (clicked === 'bulk4plus' && document.getElementById('lev-bulk4plus').checked) {
+    document.getElementById('lev-bulk2to3').checked = false;
+    document.getElementById('row-bulk2to3').classList.remove('checked');
+  }
+  calcSim();
 }
 
-/* ══ OVERVIEW LEVER CARDS ════════════════════════════════ */
-function buildOverviewLevers() {
-  const grid = document.getElementById('overview-levers');
-  grid.innerHTML = LEVERS.map(lv => `
-    <div class="lever-card">
-      <div class="lever-header">
-        <span class="lever-icon">${lv.icon}</span>
-        <span class="lv-badge">+${Math.round(lv.pct*100)}%</span>
-      </div>
-      <div class="lever-name">${lv.label}</div>
-      <div class="lever-desc">${lv.desc}</div>
-    </div>
-  `).join('');
-}
+function calcSim() {
+  // Update row highlight
+  LEVER_IDS.forEach(id => {
+    const cb = document.getElementById(id);
+    const rowId = 'row-' + id.replace('lev-', '');
+    const row = document.getElementById(rowId);
+    if (row) row.classList.toggle('checked', cb.checked);
+  });
 
-/* ══ LANES TABLE ═════════════════════════════════════════ */
-function buildLanesTable() {
-  const tbody = document.getElementById('lanes-tbody');
-  tbody.innerHTML = LANES.filter(l=>l.eligible).map(l => {
-    let band;
-    if (l.miles<250) band='Short (3×)';
-    else if (l.miles<=1000) band='Mid (2×)';
-    else band='Long (1×)';
-    return `<tr>
-      <td>${l.priority?`<span class="pdot"></span>`:''}${l.name}</td>
-      <td>${l.miles.toLocaleString()}</td>
-      <td>${band}</td>
-      <td>${l.priority?'<span class="chk">✓</span>':'<span class="dsh">—</span>'}</td>
-      <td>${l.proxO?'<span class="chk">✓</span>':'<span class="dsh">—</span>'}</td>
-      <td>${l.proxD?'<span class="chk">✓</span>':'<span class="dsh">—</span>'}</td>
-      <td><span class="tag green">Eligible</span></td>
-    </tr>`;
-  }).join('') + LANES.filter(l=>!l.eligible).map(l=>`<tr>
-    <td>${l.name} <span class="badge-offnet">off-network</span></td>
-    <td>${l.miles.toLocaleString()}</td>
-    <td>—</td>
-    <td><span class="dsh">—</span></td>
-    <td><span class="chk">✓</span></td>
-    <td><span class="dsh">—</span></td>
-    <td><span class="tag gray">Not Eligible</span></td>
-  </tr>`).join('');
-}
+  const laneEl = document.getElementById('sim-lane');
+  const [milesStr, isPriorityStr] = laneEl.value.split('|');
+  const miles = parseInt(milesStr);
+  const isPriority = isPriorityStr === 'true';
 
-/* ══ LANE SELECT ═════════════════════════════════════════ */
-function buildLaneSelect() {
-  const sel = document.getElementById('inp-lane');
-  sel.innerHTML = LANES.map(l=>`<option value="${l.key}"${!l.eligible?' (off-network)':''}>${l.name}${l.priority?' ⭐':''}</option>`).join('');
-}
+  const pallets = Math.max(1, Math.min(26, parseInt(document.getElementById('sim-pallets').value) || 1));
 
-/* ══ LEVER CHECKBOXES ════════════════════════════════════ */
-function buildLeverChecks() {
-  const container = document.getElementById('lever-checks');
-  container.innerHTML = LEVERS.map(lv=>`
-    <label class="lci">
-      <input type="checkbox" id="lv-${lv.key}" value="${lv.key}" onchange="recalc()">
-      <span class="lci-label">${lv.icon} ${lv.label}</span>
-      <span class="lci-pct">+${Math.round(lv.pct*100)}%</span>
-    </label>
-  `).join('');
-}
-
-/* ══ LANE CHANGE ═════════════════════════════════════════ */
-function onLaneChange() {
-  const key = document.getElementById('inp-lane').value;
-  const lane = LANES.find(l=>l.key===key);
-  if(!lane) return;
-  document.getElementById('inp-miles').value = lane.miles;
-
-  // Auto-set quote
-  const pallets = parseInt(document.getElementById('inp-pallets').value)||1;
-  const q = estimateQuote(pallets, lane.miles);
-  document.getElementById('inp-quote').value = Math.round(q);
-
-  // Auto-check lane-derived levers
-  const proxPickup = document.getElementById('lv-proxPickup');
-  const proxDropoff = document.getElementById('lv-proxDropoff');
-  const priorityLv = document.getElementById('lv-priority');
-  const local = document.getElementById('lv-local');
-  if(proxPickup) proxPickup.checked = lane.proxO;
-  if(proxDropoff) proxDropoff.checked = lane.proxD;
-  if(priorityLv) priorityLv.checked = lane.priority;
-  if(local) local.checked = lane.miles < 60;
-  recalc();
-}
-
-/* ══ ESTIMATE QUOTE ══════════════════════════════════════ */
-function estimateQuote(pallets, miles) {
-  const RPP=129.50, RPM=0.157, SCALE=0.87;
-  return RPP*(1+(pallets-1)*SCALE) + RPM*pallets*miles;
-}
-
-/* ══ COMPUTE ═════════════════════════════════════════════ */
-function compute(lane, pallets, miles, quote, daysAhead) {
-  if(!lane.eligible) return {eligible:false};
+  // Distance band
+  let band, bandLabel;
+  if (miles < 250)      { band = 3; bandLabel = 'Short-haul (3×)'; }
+  else if (miles < 750) { band = 2; bandLabel = 'Mid-range (2×)'; }
+  else                   { band = 1; bandLabel = 'Long-haul (1×)'; }
 
   const palletMiles = pallets * miles;
-  let distMult, band;
-  if(miles<250){distMult=3;band='Short (3×)';}
-  else if(miles<=1000){distMult=2;band='Mid (2×)';}
-  else{distMult=1;band='Long (1×)';}
+  const coreCredit  = palletMiles * BASE_RATE * band;
 
-  const core = palletMiles * BASE_RATE * distMult;
-
-  // Which levers are checked
-  const checked = {};
-  LEVERS.forEach(lv=>{
-    const el = document.getElementById('lv-'+lv.key);
-    checked[lv.key] = el ? el.checked : false;
+  // Levers
+  let totalBonus = 0;
+  const activeLevers = [];
+  LEVER_IDS.forEach(id => {
+    const cb = document.getElementById(id);
+    if (cb.checked) {
+      const v = parseFloat(cb.value);
+      totalBonus += v;
+      activeLevers.push({ name: LEVER_NAMES[id], value: v });
+    }
   });
+  const cappedBonus = Math.min(totalBonus, BONUS_CAP);
+  const multiplier  = 1 + cappedBonus;
+  const formulaCredit = coreCredit * multiplier;
 
-  const bonuses = [];
-  if(checked.priority) bonuses.push({label:'Priority growth lane',pct:0.50});
-  if(checked.flexPickup) bonuses.push({label:'Pickup window ≥4hrs',pct:0.10});
-  if(checked.flexDelivery) bonuses.push({label:'Delivery window ≥4hrs',pct:0.10});
-  if(checked.flexMabd) bonuses.push({label:'MABD flexibility',pct:0.15});
-  if(checked.advance7 || daysAhead>=7) bonuses.push({label:'Booked 7+ days ahead',pct:0.15});
-  if(checked.bulk4 || pallets>=4) bonuses.push({label:'4+ pallets',pct:0.25});
-  else if(pallets>=2) bonuses.push({label:'2–3 pallets (auto)',pct:0.10});
-  if(checked.proxPickup) bonuses.push({label:'Pickup near Warp dock',pct:0.10});
-  if(checked.proxDropoff) bonuses.push({label:'Dropoff near Warp dock',pct:0.10});
-  if(checked.local || miles<60) bonuses.push({label:'Local trip <60mi',pct:0.30});
+  // Quote estimate
+  const quote = 129.50 * (1 + (pallets - 1) * 0.87) + 0.157 * pallets * miles;
+  const cap   = quote * MARKUP_CAP;
+  const creditEarned = Math.min(formulaCredit, cap);
+  const capBinding   = formulaCredit > cap;
 
-  const bonusTotalRaw = bonuses.reduce((s,b)=>s+b.pct,0);
-  const bonusTotal = Math.min(BONUS_CAP, bonusTotalRaw);
-  const formula = core * (1+bonusTotal);
-  const cap = quote * MARKUP_CAP;
-  const capActive = formula > cap;
-  const creditEarned = Math.min(formula, cap);
+  // Update DOM
+  document.getElementById('sim-pm').textContent    = palletMiles.toLocaleString();
+  document.getElementById('sim-band').textContent   = bandLabel;
+  document.getElementById('sim-core').textContent   = '$' + coreCredit.toFixed(2);
+  document.getElementById('sim-bonus').textContent  = '+' + Math.round(cappedBonus * 100) + '%';
+  document.getElementById('sim-formula').textContent = '$' + formulaCredit.toFixed(2);
+  document.getElementById('sim-cap').textContent    = '$' + cap.toFixed(2);
+  document.getElementById('sim-quote').textContent  = '$' + quote.toFixed(2);
+  document.getElementById('sim-credit-earned').textContent = '$' + creditEarned.toFixed(2);
 
-  return {eligible:true, palletMiles, band, distMult, core, bonuses, bonusTotal, bonusTotalRaw, formula, cap, capActive, creditEarned};
-}
-
-/* ══ RECALC & RENDER ═════════════════════════════════════ */
-function recalc() {
-  const key = document.getElementById('inp-lane').value;
-  const lane = LANES.find(l=>l.key===key) || LANES[0];
-  const pallets = Math.max(1, parseInt(document.getElementById('inp-pallets').value)||1);
-  const miles = Math.max(1, parseInt(document.getElementById('inp-miles').value)||1);
-  const quote = Math.max(1, parseFloat(document.getElementById('inp-quote').value)||1);
-  const days = parseInt(document.getElementById('inp-days').value)||0;
-  const annual = Math.max(1, parseInt(document.getElementById('inp-annual').value)||1);
-
-  const r = compute(lane, pallets, miles, quote, days);
-
-  // Update lever count badge
-  const activeLevCount = LEVERS.filter(lv=>{const e=document.getElementById('lv-'+lv.key);return e&&e.checked;}).length;
-  document.getElementById('lever-count-tag').textContent = activeLevCount + ' active';
-
-  const area = document.getElementById('result-area');
-
-  if(!r.eligible) {
-    area.innerHTML = `
-      <div class="card">
-        <div class="ineligible-box">
-          <div class="ineligible-icon">🚫</div>
-          <div class="ineligible-title">Off-network lane</div>
-          <div class="ineligible-desc">This lane isn't on the Warp network yet. Credits aren't earned on off-network shipments. Choose an eligible lane above.</div>
-        </div>
-      </div>`;
-    return;
+  // Lever detail
+  if (activeLevers.length > 0) {
+    document.getElementById('sim-lever-detail').textContent =
+      activeLevers.map(l => l.name).join(', ');
+  } else {
+    document.getElementById('sim-lever-detail').textContent = 'None selected';
   }
 
-  const annualCredit = r.creditEarned * annual;
-  const annualSpend = quote * annual;
-  const pctOfQuote = (r.creditEarned / quote * 100).toFixed(1);
+  // Cap note
+  const capNoteEl = document.getElementById('sim-cap-note');
+  if (capBinding) {
+    capNoteEl.textContent = 'Cap applies — formula $' + formulaCredit.toFixed(2) + ' > cap $' + cap.toFixed(2);
+    capNoteEl.style.color = 'rgba(255,180,0,0.8)';
+  } else {
+    capNoteEl.textContent = "Cap doesn't bind ($" + formulaCredit.toFixed(2) + ' < $' + cap.toFixed(2) + ')';
+    capNoteEl.style.color = 'var(--color-text-muted)';
+  }
 
-  // Broker comparison
-  const brokerQuote = quote * 1.18;
-  const warpNoCredit = quote;
-  const warpWithCredit = quote - r.creditEarned;
-
-  const activeBonusRows = r.bonuses.map(b=>`
-    <div class="al-row">
-      <span style="color:var(--color-text-muted);">${b.label}</span>
-      <span class="al-pct">+${Math.round(b.pct*100)}%</span>
-    </div>
-  `).join('');
-
-  area.innerHTML = `
-    <!-- Hero result -->
-    <div class="result-hero">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;">
-        <div>
-          <div class="result-lbl">Credits Earned</div>
-          <div class="result-big">$${r.creditEarned.toFixed(2)}</div>
-          <div class="result-pct">${pctOfQuote}% of your $${quote.toFixed(0)} quote</div>
-        </div>
-        <div>
-          <div class="result-lbl">Effective Warp Cost</div>
-          <div style="font-size:28px;font-weight:900;letter-spacing:-.5px;">$${warpWithCredit.toFixed(2)}</div>
-          <div style="font-size:12px;color:var(--color-text-muted);margin-top:4px;">after credits applied</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Breakdown -->
-    <div class="card">
-      <div class="card-title">📊 Credit Breakdown</div>
-      <div class="br-row">
-        <span class="br-label">Pallet-miles</span>
-        <span class="br-val">${r.palletMiles.toLocaleString()}</span>
-      </div>
-      <div class="br-row">
-        <span class="br-label">Distance band</span>
-        <span class="br-val">${r.band}</span>
-      </div>
-      <div class="br-row">
-        <span class="br-label">Core credit (PM × $0.003 × mult)</span>
-        <span class="br-val">$${r.core.toFixed(2)}</span>
-      </div>
-      ${r.bonuses.length > 0 ? `
-      <div class="br-row" style="border-bottom:none;padding-bottom:0;">
-        <span class="br-label" style="font-weight:600;">Active levers</span>
-        <span class="br-val" style="color:var(--color-warp-green);">+${Math.round(Math.min(r.bonusTotalRaw,BONUS_CAP)*100)}%</span>
-      </div>
-      <div style="padding-left:12px;padding-bottom:4px;border-bottom:1px solid var(--color-border-subtle);">
-        ${activeBonusRows}
-        ${r.bonusTotalRaw > BONUS_CAP ? `<div class="al-row" style="color:var(--color-text-faint);font-size:11px;">Bonus capped at 150%</div>` : ''}
-      </div>
-      ` : `<div class="br-row"><span class="br-label">Bonus levers</span><span class="br-val dsh" style="color:var(--color-text-faint);">None active</span></div>`}
-      <div class="br-row">
-        <span class="br-label">Formula total (core + levers)</span>
-        <span class="br-val">$${r.formula.toFixed(2)}</span>
-      </div>
-      <div class="br-row ${r.capActive?'caprow':''}">
-        <span class="br-label">20% cap (${(MARKUP_CAP*100).toFixed(0)}% × $${quote.toFixed(0)})</span>
-        <span class="br-val">$${r.cap.toFixed(2)} ${r.capActive?'⚠ cap triggered':''}</span>
-      </div>
-      <div class="br-row totrow">
-        <span class="br-label">Credits earned</span>
-        <span class="br-val">$${r.creditEarned.toFixed(2)}</span>
-      </div>
-    </div>
-
-    <!-- Comparison -->
-    <div class="comp-card">
-      <div class="card-title" style="margin-bottom:12px;">💰 Cost Comparison</div>
-      <div class="comp-row">
-        <span>Provider</span>
-        <span>Rate</span>
-        <span>Net Cost</span>
-      </div>
-      <div class="comp-row">
-        <span class="comp-provider" style="color:var(--color-text-muted);">Industry broker</span>
-        <span class="comp-price">~$${brokerQuote.toFixed(0)}</span>
-        <span class="comp-price">$${brokerQuote.toFixed(0)}</span>
-      </div>
-      <div class="comp-row">
-        <span class="comp-provider">Warp (no credits)</span>
-        <span class="comp-price">$${quote.toFixed(0)}</span>
-        <span class="comp-price">$${quote.toFixed(0)}</span>
-      </div>
-      <div class="comp-row" style="background:rgba(0,255,51,.03);">
-        <span class="comp-provider comp-warp">Warp + credits</span>
-        <span class="comp-price comp-warp">$${quote.toFixed(0)}</span>
-        <span class="comp-price comp-warp">$${warpWithCredit.toFixed(2)}</span>
-      </div>
-      <div style="margin-top:12px;font-size:11px;color:var(--color-text-faint);">
-        Savings vs broker: <strong style="color:var(--color-warp-green);">$${(brokerQuote-warpWithCredit).toFixed(2)}</strong> on this shipment
-      </div>
-    </div>
-
-    <!-- Annual -->
-    <div class="card">
-      <div class="card-title">📈 Annual Projection (${annual} shipments)</div>
-      <div class="br-row">
-        <span class="br-label">Total annual spend</span>
-        <span class="br-val">$${annualSpend.toLocaleString('en-US',{maximumFractionDigits:0})}</span>
-      </div>
-      <div class="br-row">
-        <span class="br-label">Total credits earned</span>
-        <span class="br-val" style="color:var(--color-warp-green);">$${annualCredit.toLocaleString('en-US',{maximumFractionDigits:0})}</span>
-      </div>
-      <div class="br-row totrow">
-        <span class="br-label">Effective annual spend</span>
-        <span class="br-val">$${(annualSpend-annualCredit).toLocaleString('en-US',{maximumFractionDigits:0})}</span>
-      </div>
-      <div style="margin-top:12px;" class="info-box green">
-        That's <strong>$${annualCredit.toLocaleString('en-US',{maximumFractionDigits:0})}</strong> back from ${annual} shipments — a <strong>${pctOfQuote}%</strong> effective discount.
-      </div>
-    </div>
-  `;
+  // Auto-check priority lever if lane is priority
+  const prioCb = document.getElementById('lev-priorityLane');
+  if (isPriority && !prioCb.checked) {
+    // Don't force it — user can toggle, just note
+  }
 }
 
-/* ══ TAB SWITCH ══════════════════════════════════════════ */
-function switchTab(id) {
-  document.querySelectorAll('.tab').forEach((t,i)=>{
-    const ids=['overview','maxy','refer'];
-    t.classList.toggle('active', ids[i]===id);
-  });
-  document.querySelectorAll('.tab-panel').forEach(p=>{
-    p.classList.remove('active');
-  });
-  document.getElementById('tab-'+id).classList.add('active');
+// ── Savings Calculator ────────────────────────────────────────────────────
+function calcSavings(val) {
+  const shipments = parseInt(val);
+  const pct = ((shipments - 10) / (2000 - 10)) * 100;
+  document.getElementById('savings-slider').style.background =
+    `linear-gradient(90deg,#00FF33 ${pct}%,rgba(255,255,255,0.1) 0%)`;
+  document.getElementById('slider-val').textContent = shipments.toLocaleString();
+  document.getElementById('save-shipments').textContent = shipments.toLocaleString();
+
+  const annualShipments = shipments * 12;
+  const avgQuote = 500;
+  const avgCredit = 25;
+
+  const creditsEarned     = annualShipments * avgCredit;
+  const warpFreightSpend  = annualShipments * avgQuote;
+  const creditsAsPct      = (creditsEarned / warpFreightSpend) * 100;
+  const industryTotal     = annualShipments * avgQuote * 1.30;
+  const warpTotal         = warpFreightSpend - creditsEarned;
+  const netSavings        = industryTotal - warpTotal;
+
+  const baseRate          = avgQuote / 1.10;
+  const netCostPerShipment = avgQuote - avgCredit;
+  const effMarkup         = ((netCostPerShipment - baseRate) / baseRate) * 100;
+
+  document.getElementById('save-credits').textContent  = '$' + creditsEarned.toLocaleString();
+  document.getElementById('save-pct').textContent      = creditsAsPct.toFixed(1) + '%';
+  document.getElementById('save-netsavings').textContent = '$' + netSavings.toLocaleString() + '/year';
+  document.getElementById('save-effmarkup').textContent = effMarkup.toFixed(1) + '%';
 }
 
-/* ══ COPY LINK ═══════════════════════════════════════════ */
-function copyLink(btn) {
-  const input = document.querySelector('.ref-link-input');
-  navigator.clipboard.writeText(input.value).catch(()=>{});
-  btn.textContent = 'Copied!';
-  setTimeout(()=>{ btn.textContent='Copy Link'; }, 2000);
-}
-
-/* ══ BOOT ════════════════════════════════════════════════ */
-init();
+// Init on load
+calcSim();
+calcSavings(100);
 </script>
+
 </body>
 </html>
