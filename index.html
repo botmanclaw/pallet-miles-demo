@@ -1626,12 +1626,85 @@ function simulateQuote() {
   var rpm=0.157,rpp=129.50,scale=0.87;
   var quote=rpp*(1+(pallets-1)*scale)+rpm*pallets*miles;
   var pm=pallets*miles;
-  var core=pm*0.003*2;
-  var bonuses=0.50+0.10+0.10+0.10;
-  var credit=Math.min(core*(1+bonuses),quote*0.20);
+  var distMult=2.0; var band='Mid (2×)';
+  var core=pm*0.003*distMult;
+  var leverList=[
+    {name:'Priority growth lane',pct:0.50,active:true},
+    {name:'Pickup window ≥4hrs',pct:0.10,active:true},
+    {name:'Delivery window ≥4hrs',pct:0.10,active:true},
+    {name:(pallets>=4?'4+ pallets':'2–3 pallets'),pct:(pallets>=4?0.25:0.10),active:pallets>=2},
+    {name:'Pickup near Warp dock',pct:0.10,active:true},
+    {name:'Dropoff near Warp dock',pct:0.10,active:false},
+    {name:'MABD flexibility',pct:0.15,active:false},
+    {name:'Booked 7+ days ahead',pct:0.15,active:false},
+  ];
+  var bonusSum=leverList.reduce(function(s,l){return s+(l.active?l.pct:0);},0);
+  var bonusCapped=Math.min(1.50,bonusSum);
+  var formula=core*(1+bonusCapped);
+  var cap=quote*0.20;
+  var credit=Math.min(formula,cap);
+  
   res.innerHTML='<div class="loading-bar"><div class="loading-fill"></div></div>';
   setTimeout(function(){
-    res.innerHTML='<div class="qr-wrap"><div class="qr-tag">WARP TECHNOLOGY · LTL · 1 day transit</div><div class="qr-price">$'+quote.toFixed(2)+'</div><div class="qr-meta">Los Angeles, CA → San Francisco, CA · '+pallets+' pallet'+(pallets>1?'s':'')+' · 380 miles</div><div class="qr-credit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:6px;"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>Pallet Miles credits earned: +$'+credit.toFixed(2)+' — applied to your next booking</div></div>';
+    var leverRows=leverList.map(function(l){
+      var amt=l.active?core*l.pct:0;
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #2e2e35;font-size:12px;">'
+        +'<div style="display:flex;align-items:center;gap:8px;">'
+        +'<div style="width:16px;height:16px;border-radius:50%;background:'+(l.active?'rgba(0,255,51,0.15)':'rgba(255,255,255,0.05)')+';border:1px solid '+(l.active?'rgba(0,255,51,0.3)':'#2e2e35')+';display:flex;align-items:center;justify-content:center;flex-shrink:0;">'
+        +(l.active?'<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#00FF33" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>':'')
+        +'</div>'
+        +'<span style="color:'+(l.active?'#fff':'#6b6b75')+'">'+l.name+'</span>'
+        +'<span style="font-size:10px;background:'+(l.active?'rgba(0,255,51,0.1)':'rgba(255,255,255,0.04)')+';color:'+(l.active?'#00FF33':'#6b6b75')+';border:1px solid '+(l.active?'rgba(0,255,51,0.2)':'#2e2e35')+';border-radius:99px;padding:1px 6px;">+'+(l.pct*100).toFixed(0)+'%</span>'
+        +'</div>'
+        +(l.active?'<span style="color:#00FF33;font-weight:600;">+$'+amt.toFixed(2)+'</span>':'<span style="color:#6b6b75;">—</span>')
+        +'</div>';
+    }).join('');
+    
+    res.innerHTML=
+      // Quote result card
+      '<div style="background:#212126;border:1px solid #2e2e35;border-radius:12px;padding:20px 24px;margin-bottom:16px;animation:fadeUp 0.4s ease;">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">'
+      +'<div>'
+      +'<div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#a0a0ab;margin-bottom:2px;">WARP TECHNOLOGY · LTL · 1 DAY TRANSIT</div>'
+      +'<div style="font-size:42px;font-weight:900;letter-spacing:-0.03em;color:#fff;animation:countPulse 3s ease-in-out infinite;">$'+quote.toFixed(2)+'</div>'
+      +'<div style="font-size:12px;color:#a0a0ab;margin-top:2px;">Los Angeles, CA → San Francisco, CA · '+pallets+' pallet'+(pallets>1?'s':'')+' · 380 miles</div>'
+      +'</div>'
+      +'<button style="background:#00FF33;color:#000;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;">Book This Rate →</button>'
+      +'</div>'
+      +'</div>'
+      
+      // Pallet Miles credit breakdown card
+      +'<div style="background:#212126;border:1px solid rgba(0,255,51,0.2);border-radius:12px;overflow:hidden;animation:fadeUp 0.5s ease 0.1s both;">'
+      +'<div style="padding:14px 20px;border-bottom:1px solid #2e2e35;display:flex;align-items:center;gap:8px;">'
+      +'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#00FF33" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>'
+      +'<span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#00FF33;">Pallet Miles Credits Earned</span>'
+      +'</div>'
+      +'<div style="padding:14px 20px;">'
+      // Step 1: pallet-miles
+      +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#a0a0ab;margin-bottom:8px;">Step 1 · Core Credit</div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#a0a0ab;">'
+      +'<span>Pallet-miles <span style="color:#6b6b75;">('+pallets+'p × 380mi)</span></span><span>'+pm.toLocaleString()+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#a0a0ab;">'
+      +'<span>Base rate</span><span>×$0.003</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:#a0a0ab;">'
+      +'<span>Distance band <span style="color:#6b6b75;">('+band+')</span></span><span>×'+distMult+'</span></div>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;font-weight:600;color:#fff;border-top:1px solid #2e2e35;margin-top:4px;">'
+      +'<span>Core credit</span><span>$'+core.toFixed(2)+'</span></div>'
+      
+      // Step 2: levers
+      +'<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#a0a0ab;margin:12px 0 6px;">Step 2 · Bonus Levers</div>'
+      +leverRows
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;padding:6px 0;font-weight:600;color:#fff;border-top:1px solid #2e2e35;margin-top:4px;">'
+      +'<span>Bonus total (capped at +150%)</span><span>+'+(bonusCapped*100).toFixed(0)+'%</span></div>'
+      
+      // Final
+      +'<div style="margin-top:12px;padding:12px 16px;background:rgba(0,255,51,0.06);border:1px solid rgba(0,255,51,0.2);border-radius:8px;display:flex;justify-content:space-between;align-items:center;">'
+      +'<span style="font-size:13px;color:#a0a0ab;">Credits earned this shipment</span>'
+      +'<span style="font-size:22px;font-weight:900;color:#00FF33;animation:countPulse 2s ease-in-out infinite;">+$'+credit.toFixed(2)+'</span>'
+      +'</div>'
+      +'<div style="font-size:11px;color:#6b6b75;margin-top:8px;">Applied to your next Warp booking on any eligible lane. Expires 90 days after delivery.</div>'
+      +'</div>'
+      +'</div>';
   },1200);
 }
 </script>
